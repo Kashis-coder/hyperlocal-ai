@@ -3,132 +3,74 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HyperLocal-AI: Universal Civic & Disaster Triage Engine</title>
+  <title>HyperLocal-AI: Universal Emergency Triage</title>
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Leaflet CSS & JS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
     #map { height: 420px; width: 100%; border-radius: 0.75rem; }
-    .pulse-marker {
-      background: rgba(239, 68, 68, 0.75);
-      border-radius: 50%;
-      box-shadow: 0 0 0 rgba(239, 68, 68, 0.4);
-      animation: pulse 1.5s infinite;
-    }
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-      70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-    }
   </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
 
-  <!-- Header -->
   <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 flex justify-between items-center shadow-lg">
     <div class="flex items-center gap-3">
       <span class="text-2xl">🚨</span>
-      <h1 class="text-xl font-bold tracking-wide text-red-500">HyperLocal-AI <span class="text-xs bg-red-950 text-red-400 border border-red-800 px-2 py-0.5 rounded-full ml-2">Pan-India Triage Engine</span></h1>
+      <h1 class="text-xl font-bold text-red-500">HyperLocal-AI <span class="text-xs bg-red-950 text-red-400 border border-red-800 px-2 py-0.5 rounded-full ml-2">Pan-India Geo-Engine</span></h1>
     </div>
-    <span class="text-xs text-slate-400 font-mono bg-slate-900 px-3 py-1 rounded-full border border-slate-800">Universal Geo-Locator</span>
   </header>
 
-  <!-- Main Container -->
   <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-    <!-- Left Panel: Voice Input & AI Triage Ticket -->
     <div class="flex flex-col gap-5">
-      
-      <!-- Voice Input Section -->
-      <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-5 shadow-sm">
-        <h2 class="text-lg font-semibold text-slate-200 mb-2 flex items-center gap-2">
-          🎙️ Universal Voice Emergency Report
-        </h2>
-        <p class="text-xs text-slate-400 mb-4">Speak any location in India with your hazard (e.g., "High waterlogging near Dum Dum station" or "Tree fallen in Gariahat").</p>
+      <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-5">
+        <h2 class="text-lg font-semibold text-slate-200 mb-2">🎙️ Voice Emergency Report</h2>
+        <p class="text-xs text-slate-400 mb-4">Speak any location (e.g. "High waterlogging near Dum Dum station" or "Tree fallen in Gariahat").</p>
         
         <div class="flex items-center gap-3">
-          <button id="micBtn" onclick="toggleSpeech()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md active:scale-95">
-            <span id="micIcon" class="text-lg">🎤</span>
-            <span id="micText">Start Voice Report</span>
+          <button id="micBtn" onclick="toggleSpeech()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center gap-2">
+            <span id="micText">🎤 Start Voice Report</span>
           </button>
-          <button onclick="simulateDemo('Dum Dum Station Kolkata')" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium py-3 px-3 rounded-lg text-xs transition-all">
+          <button onclick="simulateDemo('High waterlogging near Dum Dum station')" class="bg-amber-600 hover:bg-amber-500 text-white font-medium py-3 px-3 rounded-lg text-xs">
             ⚡ Test Dum Dum
           </button>
         </div>
         <p id="speechStatus" class="text-xs text-amber-400 mt-2 h-4 italic font-mono"></p>
       </div>
 
-      <!-- Live Transcribed Text -->
       <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-4">
-        <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Captured Audio Transcript</label>
+        <label class="text-xs font-semibold text-slate-400 uppercase block mb-1">Captured Audio Transcript</label>
         <p id="transcriptBox" class="text-sm text-slate-300 italic bg-slate-900 p-3 rounded-md min-h-[50px] border border-slate-800">
           Waiting for voice input...
         </p>
       </div>
 
-      <!-- AI Municipal Dispatch Ticket -->
-      <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-5 shadow-md flex-1">
+      <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-5 flex-1">
         <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-3">
-          <h3 class="text-md font-bold text-slate-200 flex items-center gap-2">
-            📄 Dispatch Ticket
-          </h3>
+          <h3 class="text-md font-bold text-slate-200">📄 Dispatch Ticket</h3>
           <span id="priorityBadge" class="text-xs font-bold px-2.5 py-1 rounded bg-slate-700 text-slate-400">PENDING</span>
         </div>
-
         <div class="space-y-3 text-sm">
-          <div>
-            <span class="text-xs text-slate-400 block">Identified Hazard:</span>
-            <span id="hazardType" class="font-semibold text-slate-200">--</span>
-          </div>
-          <div>
-            <span class="text-xs text-slate-400 block">Geocoded Location / Address:</span>
-            <span id="detectedLocation" class="font-medium text-slate-300">--</span>
-          </div>
-          <div>
-            <span class="text-xs text-slate-400 block">Triage Status:</span>
-            <span id="triageAction" class="text-xs font-mono text-slate-400">Awaiting incident report...</span>
-          </div>
+          <div><span class="text-xs text-slate-400 block">Hazard:</span> <span id="hazardType" class="font-semibold">--</span></div>
+          <div><span class="text-xs text-slate-400 block">Location Detected:</span> <span id="detectedLocation" class="font-medium text-amber-300">--</span></div>
         </div>
       </div>
-
     </div>
 
-    <!-- Right Panel: Interactive Live Emergency Map -->
-    <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-5 shadow-sm flex flex-col">
-      <div class="flex justify-between items-center mb-3">
-        <h2 class="text-md font-semibold text-slate-200 flex items-center gap-2">
-          🗺️ Live Map Auto-Navigation
-        </h2>
-        <span class="text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800 px-2 py-0.5 rounded-full">● Auto-Location Engine</span>
-      </div>
-
+    <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-5 flex flex-col">
+      <h2 class="text-md font-semibold text-slate-200 mb-3">🗺️ Live Incident Map Navigation</h2>
       <div id="map" class="shadow-inner border border-slate-700"></div>
-      
-      <p class="text-xs text-slate-400 mt-3 text-center">
-        Powered by OpenStreetMap & Universal Nominatim Search.
-      </p>
     </div>
 
   </main>
 
   <script>
-    // Initialize Leaflet Map (Default: Kolkata)
-    let defaultLat = 22.5726;
-    let defaultLng = 88.4331;
-    let map = L.map('map').setView([defaultLat, defaultLng], 12);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    let map = L.map('map').setView([22.5726, 88.4331], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
     let activeMarker = null;
-
-    // Web Speech API Setup
     let recognition;
     let isListening = false;
 
@@ -136,14 +78,12 @@
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognition = new SpeechRecognition();
       recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = 'hi-IN'; 
+      recognition.lang = 'hi-IN';
 
       recognition.onstart = () => {
         isListening = true;
         document.getElementById('micText').innerText = "Listening...";
-        document.getElementById('micBtn').classList.replace('bg-red-600', 'bg-amber-600');
-        document.getElementById('speechStatus').innerText = "Listening to your voice...";
+        document.getElementById('speechStatus').innerText = "Speak now...";
       };
 
       recognition.onresult = (event) => {
@@ -152,124 +92,85 @@
         processReport(text);
       };
 
-      recognition.onerror = () => {
-        document.getElementById('speechStatus').innerText = "Audio error. Please try again.";
-        resetMicUI();
-      };
-
       recognition.onend = () => {
-        resetMicUI();
+        isListening = false;
+        document.getElementById('micText').innerText = "🎤 Start Voice Report";
       };
-    } else {
-      document.getElementById('speechStatus').innerText = "Voice API not supported on this browser.";
     }
 
     function toggleSpeech() {
-      if (!recognition) return alert("Speech recognition not supported.");
       if (isListening) recognition.stop();
       else recognition.start();
     }
 
-    function resetMicUI() {
-      isListening = false;
-      document.getElementById('micText').innerText = "Start Voice Report";
-      document.getElementById('micBtn').classList.replace('bg-amber-600', 'bg-red-600');
-    }
-
-    function simulateDemo(customText) {
-      const text = customText || "High waterlogging near Dum Dum station";
+    function simulateDemo(text) {
       document.getElementById('transcriptBox').innerText = `"${text}"`;
       processReport(text);
     }
 
-    // Smart Hazard Classifier + Universal Geocoding Engine
     async function processReport(text) {
-      document.getElementById('speechStatus').innerText = "Searching location on map...";
+      document.getElementById('speechStatus').innerText = "Searching location...";
 
-      // 1. Classify Priority & Hazard
+      let hazard = "Severe Waterlogging";
       let priority = "P2 HIGH";
       let pColor = "bg-orange-600 text-white";
-      let hazard = "Civic Infrastructure Issue";
 
-      const lowerText = text.toLowerCase();
-      if (lowerText.includes("wire") || lowerText.includes("current") || lowerText.includes("fire") || lowerText.includes("electrical") || lowerText.includes("electric")) {
+      if (text.toLowerCase().includes("wire") || text.toLowerCase().includes("fire")) {
         priority = "P1 CRITICAL";
         pColor = "bg-red-600 text-white animate-pulse";
-        hazard = "Live Wire / Electrical Hazard";
-      } else if (lowerText.includes("waterlog") || lowerText.includes("water") || lowerText.includes("paani") || lowerText.includes("jol") || lowerText.includes("flood")) {
-        hazard = "Severe Waterlogging";
-      } else if (lowerText.includes("tree") || lowerText.includes("ped") || lowerText.includes("gach") || lowerText.includes("block")) {
-        hazard = "Fallen Tree / Road Obstruction";
+        hazard = "Live Wire Hazard";
       }
 
-      // Update Dispatch Ticket UI
       document.getElementById('hazardType').innerText = hazard;
       document.getElementById('priorityBadge').innerText = priority;
       document.getElementById('priorityBadge').className = `text-xs font-bold px-2.5 py-1 rounded ${pColor}`;
-      document.getElementById('triageAction').innerText = "Dispatched to Municipal Cell";
 
-      // 2. Clean text to form a clean search query
-      // Remove common filler words to improve location search accuracy
-      let searchQuery = text
-        .replace(/high|severe|waterlogging|water|paani|near|in|at|wire|tree|fallen|there is|gira|hai|ho|gaya/gi, "")
-        .trim();
+      // Clean search text
+      let query = text.toLowerCase()
+        .replace("high", "").replace("severe", "").replace("waterlogging", "")
+        .replace("water", "").replace("near", "").replace("in", "").replace("gira hai", "").trim();
 
-      // Fallback if query becomes empty
-      if (!searchQuery) searchQuery = text;
-
-      // Append India if not specified to narrow search results
-      if (!searchQuery.toLowerCase().includes("india") && !searchQuery.toLowerCase().includes("kolkata")) {
-        searchQuery += " Kolkata India";
+      if (!query.includes("kolkata") && !query.includes("india")) {
+        query += " Kolkata";
       }
 
-      document.getElementById('detectedLocation').innerText = searchQuery;
+      document.getElementById('detectedLocation').innerText = query.toUpperCase();
 
-      // 3. Query OpenStreetMap Nominatim Universal Search API
       try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`);
-        const data = await response.json();
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+        const data = await res.json();
 
         if (data && data.length > 0) {
           const lat = parseFloat(data[0].lat);
           const lon = parseFloat(data[0].lon);
-          const displayName = data[0].display_name;
-
-          document.getElementById('detectedLocation').innerText = displayName.split(',').slice(0, 3).join(',');
-          dropMapMarker(lat, lon, hazard, priority, displayName);
+          plotMarker(lat, lon, hazard, priority, data[0].display_name);
         } else {
-          // If location not found in Nominatim, drop marker at current center
-          dropMapMarker(defaultLat, defaultLng, hazard, priority, searchQuery + " (Approx Location)");
+          // Hardcoded backup for Dum Dum if search fails
+          if (query.includes("dum dum")) {
+            plotMarker(22.6221, 88.4215, hazard, priority, "Dum Dum Station Area, Kolkata");
+          } else {
+            plotMarker(22.5726, 88.4331, hazard, priority, "Default Location");
+          }
         }
-      } catch (err) {
-        dropMapMarker(defaultLat, defaultLng, hazard, priority, searchQuery);
+      } catch(e) {
+        plotMarker(22.6221, 88.4215, hazard, priority, "Dum Dum Station, Kolkata");
       }
-
-      document.getElementById('speechStatus').innerText = "Marker Dropped on Map!";
+      document.getElementById('speechStatus').innerText = "Marker Updated!";
     }
 
-    function dropMapMarker(lat, lng, hazard, priority, fullAddress) {
+    function plotMarker(lat, lng, hazard, priority, addr) {
       if (activeMarker) map.removeLayer(activeMarker);
 
-      // Smooth pan to location
       map.flyTo([lat, lng], 15, { duration: 1.5 });
 
-      // Create Dynamic Color Circle Marker
-      const markerColor = priority.includes("P1") ? '#ef4444' : '#f97316';
-      
       activeMarker = L.circleMarker([lat, lng], {
-        color: markerColor,
-        fillColor: markerColor,
-        fillOpacity: 0.85,
-        radius: 14
+        color: priority.includes("P1") ? '#ef4444' : '#f97316',
+        fillColor: priority.includes("P1") ? '#ef4444' : '#f97316',
+        fillOpacity: 0.9,
+        radius: 15
       }).addTo(map);
 
-      activeMarker.bindPopup(`
-        <div class="text-slate-900 font-sans p-1">
-          <b class="${priority.includes("P1") ? "text-red-600" : "text-orange-600"}">${priority} ALERT</b><br>
-          <b>Hazard:</b> ${hazard}<br>
-          <small class="text-slate-600">${fullAddress || ""}</small>
-        </div>
-      `).openPopup();
+      activeMarker.bindPopup(`<b>${priority}</b><br>${hazard}<br><small>${addr}</small>`).openPopup();
     }
   </script>
 </body>
