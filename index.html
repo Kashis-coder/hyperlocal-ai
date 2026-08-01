@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BMC HyperLocal-AI | Bidhannagar Municipal Corporation Hazard Triage</title>
+    <title>BMC HyperLocal-AI | Bidhannagar Municipal Priority Triage</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,12 +26,6 @@
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                         heading: ['Outfit', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            500: '#059669',
-                            600: '#047857',
-                        }
                     }
                 }
             }
@@ -48,20 +42,26 @@
         .leaflet-popup-tip { background: rgba(15, 23, 42, 0.95) !important; }
 
         .custom-marker { display: flex; align-items: center; justify-content: center; }
-        .marker-pin-active {
-            width: 32px; height: 32px; border-radius: 50%; background: #ef4444; border: 2px solid #fff;
-            box-shadow: 0 0 15px #ef4444; display: flex; align-items: center; justify-content: center; color: white;
-            animation: pulseP1 1.5s infinite;
+        
+        /* Priority Color Markers */
+        .marker-p1 {
+            width: 34px; height: 34px; border-radius: 50%; background: #ef4444; border: 2px solid #fff;
+            box-shadow: 0 0 18px #ef4444; display: flex; align-items: center; justify-content: center; color: white;
+            animation: pulseP1 1.2s infinite;
         }
-        .marker-pin-history {
-            width: 26px; height: 26px; border-radius: 50%; background: #f97316; border: 2px solid #fff;
-            box-shadow: 0 0 8px rgba(249, 115, 22, 0.6); display: flex; align-items: center; justify-content: center; color: white;
+        .marker-p2 {
+            width: 30px; height: 30px; border-radius: 50%; background: #f97316; border: 2px solid #fff;
+            box-shadow: 0 0 10px rgba(249, 115, 22, 0.8); display: flex; align-items: center; justify-content: center; color: white;
         }
-        .marker-pin-resolved {
+        .marker-p3 {
+            width: 26px; height: 26px; border-radius: 50%; background: #eab308; border: 2px solid #fff;
+            box-shadow: 0 0 8px rgba(234, 179, 8, 0.6); display: flex; align-items: center; justify-content: center; color: white;
+        }
+        .marker-resolved {
             width: 28px; height: 28px; border-radius: 50%; background: #10b981; border: 2px solid #fff;
             box-shadow: 0 0 10px rgba(16, 185, 129, 0.8); display: flex; align-items: center; justify-content: center; color: white;
         }
-        @keyframes pulseP1 { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); } 70% { box-shadow: 0 0 0 16px rgba(239, 68, 68, 0); } }
+        @keyframes pulseP1 { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.9); } 70% { box-shadow: 0 0 0 18px rgba(239, 68, 68, 0); } }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
@@ -74,29 +74,29 @@
             </div>
             <div>
                 <h1 class="font-heading font-extrabold text-xl text-white">Bidhannagar <span class="text-emerald-500">Citizen Alert</span></h1>
-                <p class="text-xs text-gray-400">Bidhannagar Municipal Corporation (BMC Jurisdiction Portal)</p>
+                <p class="text-xs text-gray-400">BMC AI-Powered Priority Triage System</p>
             </div>
         </div>
 
-        <!-- Mode Toggle & Counter -->
+        <!-- Mode Switcher -->
         <div class="flex items-center space-x-3">
             <div class="bg-gray-900 border border-gray-800 p-1 rounded-lg flex text-xs font-semibold">
                 <button id="view-citizen" onclick="switchView('citizen')" class="px-3 py-1 rounded-md bg-emerald-600 text-white transition">Citizen Portal</button>
-                <button id="view-admin" onclick="switchView('admin')" class="px-3 py-1 rounded-md text-gray-400 hover:text-white transition">BMC Admin Center</button>
+                <button id="view-admin" onclick="switchView('admin')" class="px-3 py-1 rounded-md text-gray-400 hover:text-white transition">BMC Admin Queue</button>
             </div>
             <div class="hidden sm:flex items-center bg-gray-900 border border-gray-800 px-3 py-1 rounded-full text-xs font-semibold text-gray-300">
-                Total Reported: <span id="incident-count" class="text-emerald-400 font-bold ml-1">0</span>
+                Active Queue: <span id="incident-count" class="text-emerald-400 font-bold ml-1">0</span>
             </div>
         </div>
     </header>
 
-    <!-- Main Container -->
+    <!-- Main Grid -->
     <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 p-4 lg:p-6 max-w-[1920px] mx-auto w-full">
 
-        <!-- Controls Section -->
+        <!-- Controls / Admin Queue Section -->
         <section class="lg:col-span-5 flex flex-col space-y-5">
             
-            <!-- Citizen View Control -->
+            <!-- Citizen Voice Panel -->
             <div id="citizen-panel" class="glass-panel rounded-2xl p-5 shadow-2xl">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="font-heading font-bold text-lg text-white"><i class="fa-solid fa-microphone text-emerald-500 mr-2"></i>BMC Voice Reporting</h2>
@@ -108,77 +108,63 @@
                 </div>
 
                 <!-- Mic Box -->
-                <div class="flex flex-col items-center justify-center py-6 px-4 rounded-xl bg-gray-950/60 border border-gray-800 text-center">
+                <div class="flex flex-col items-center justify-center py-5 px-4 rounded-xl bg-gray-950/60 border border-gray-800 text-center">
                     <button id="mic-btn" onclick="toggleSpeechRecognition()" class="w-20 h-20 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center text-3xl shadow-xl transition transform active:scale-95">
                         <i id="mic-icon" class="fa-solid fa-microphone"></i>
                     </button>
-                    <p id="mic-status" class="mt-4 text-xs font-semibold text-gray-300">Click Mic & Speak Location (e.g., "College More me paani bhar gaya hai")</p>
-                    <p id="speech-feedback" class="mt-1 text-xs text-emerald-400 min-h-[1.25rem] italic">Listening for voice location input...</p>
+                    <p id="mic-status" class="mt-3 text-xs font-semibold text-gray-300">Click & Speak (e.g., "City Centre 1 me aag lag gayi hai")</p>
+                    <p id="speech-feedback" class="mt-1 text-xs text-emerald-400 min-h-[1.25rem] italic">Listening for voice hazard report...</p>
                 </div>
 
-                <!-- Quick Presets -->
+                <!-- Presets with Priority Flavors -->
                 <div class="mt-4 pt-3 border-t border-gray-800">
-                    <p class="text-[11px] text-gray-400 mb-2 font-medium">Bidhannagar BMC Quick Presets:</p>
+                    <p class="text-[11px] text-gray-400 mb-2 font-medium">Test Priority Keywords Presets:</p>
                     <div class="grid grid-cols-2 gap-2">
-                        <button onclick="handleLocationQuery('Techno India University Sector 5')" class="p-2 rounded bg-gray-900 border border-gray-800 hover:border-emerald-500 text-[11px] text-left text-gray-300">
-                            🎓 Techno India Univ (TIU)
+                        <button onclick="handleLocationQuery('City Centre 1 me AAG LAG GAYI HAI')" class="p-2 rounded bg-red-950/30 border border-red-800/50 hover:border-red-500 text-[11px] text-left text-red-300">
+                            🔴 Fire Alert (P1 Critical)
                         </button>
-                        <button onclick="handleLocationQuery('College More Salt Lake')" class="p-2 rounded bg-gray-900 border border-gray-800 hover:border-emerald-500 text-[11px] text-left text-gray-300">
-                            🏬 College More Sector 5
+                        <button onclick="handleLocationQuery('College More Salt Lake me PAANI BHAR GAYA HAI')" class="p-2 rounded bg-orange-950/30 border border-orange-800/50 hover:border-orange-500 text-[11px] text-left text-orange-300">
+                            🟠 Waterlogging (P2 High)
                         </button>
-                        <button onclick="handleLocationQuery('Karunamoyee Bus Station')" class="p-2 rounded bg-gray-900 border border-gray-800 hover:border-emerald-500 text-[11px] text-left text-gray-300">
-                            🚌 Karunamoyee
+                        <button onclick="handleLocationQuery('Techno India ke paas ACCIDENT HUA HAI')" class="p-2 rounded bg-red-950/30 border border-red-800/50 hover:border-red-500 text-[11px] text-left text-red-300">
+                            🔴 Road Accident (P1 Critical)
                         </button>
-                        <button onclick="handleLocationQuery('City Centre 1 Salt Lake')" class="p-2 rounded bg-gray-900 border border-gray-800 hover:border-emerald-500 text-[11px] text-left text-gray-300">
-                            🛍️ City Centre 1
+                        <button onclick="handleLocationQuery('Karunamoyee me STREETLIGHT KHARAB HAI')" class="p-2 rounded bg-yellow-950/30 border border-yellow-800/50 hover:border-yellow-500 text-[11px] text-left text-yellow-300">
+                            🟡 Streetlight Off (P3 Normal)
                         </button>
                     </div>
                 </div>
 
-                <!-- Manual Search Box -->
+                <!-- Manual Input -->
                 <div class="mt-4">
                     <div class="flex gap-2">
-                        <input id="manual-text" type="text" placeholder="Type area inside Bidhannagar..." class="flex-1 px-3 py-2 rounded-lg bg-gray-900 border border-gray-700 text-xs text-white focus:outline-none focus:border-emerald-500">
+                        <input id="manual-text" type="text" placeholder="Type hazard and place inside Bidhannagar..." class="flex-1 px-3 py-2 rounded-lg bg-gray-900 border border-gray-700 text-xs text-white focus:outline-none focus:border-emerald-500">
                         <button onclick="submitManualText()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg text-white">Report</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Admin View Panel (Hidden by default, toggled via header) -->
+            <!-- Admin Priority Queue Control Panel -->
             <div id="admin-panel" class="hidden glass-panel rounded-2xl p-5 shadow-2xl border-emerald-500/40">
                 <div class="flex items-center justify-between mb-3 border-b border-gray-800 pb-2">
-                    <h2 class="font-heading font-bold text-lg text-emerald-400"><i class="fa-solid fa-user-shield mr-2"></i>BMC Dispatcher Control</h2>
-                    <span class="px-2 py-0.5 text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded font-mono">OFFICER ACTIVE</span>
+                    <div>
+                        <h2 class="font-heading font-bold text-lg text-emerald-400"><i class="fa-solid fa-list-check mr-2"></i>Smart AI Priority Queue</h2>
+                        <p class="text-[11px] text-gray-400">Hazards auto-sorted by Severity Score & Risk Level</p>
+                    </div>
+                    <span class="px-2 py-1 text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 rounded font-mono font-bold animate-pulse">P1 FIRST MODE</span>
                 </div>
 
-                <p class="text-xs text-gray-300 mb-4">Manage reported hazards and dispatch ward response teams in real-time.</p>
-
-                <div class="space-y-3">
-                    <button onclick="dispatchWardTeam()" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-xs font-bold text-white shadow-lg flex items-center justify-center space-x-2">
-                        <i class="fa-solid fa-truck-medical"></i>
-                        <span>Dispatch Ward Officer Response Team</span>
-                    </button>
-                    <button onclick="markLatestResolved()" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-xs font-bold text-white shadow-lg flex items-center justify-center space-x-2">
-                        <i class="fa-solid fa-circle-check"></i>
-                        <span>Mark Active Hazard as RESOLVED</span>
-                    </button>
+                <div id="admin-queue-list" class="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+                    <p class="text-xs text-gray-500 italic py-4 text-center">No active issues in priority queue.</p>
                 </div>
             </div>
 
-            <!-- Triage Status Card -->
+            <!-- Triage Summary Feed -->
             <div id="triage-output-card" class="glass-card rounded-xl p-4 border-l-4 border-l-emerald-500">
-                <span id="priority-badge" class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">BMC DISPATCH STATUS</span>
+                <span id="priority-badge" class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">LATEST DISPATCH STATUS</span>
                 <h3 id="hazard-title" class="font-bold text-base text-white mt-1">Bidhannagar Jurisdiction Monitor</h3>
-                <p id="hazard-location" class="text-xs text-emerald-300 mt-0.5"><i class="fa-solid fa-location-dot mr-1"></i><span id="location-text">Ready for local reports...</span></p>
-                <p id="speech-transcript" class="text-xs text-gray-400 mt-2 italic bg-gray-950/40 p-2 rounded border border-gray-800">Voice transcript will show here...</p>
-
-                <!-- Incident History Log -->
-                <div class="mt-4 pt-3 border-t border-gray-800">
-                    <h4 class="text-xs font-bold text-gray-300 mb-2"><i class="fa-solid fa-clock-rotate-left mr-1 text-emerald-500"></i> Active Reported Incidents:</h4>
-                    <div id="incident-history-list" class="max-h-[140px] overflow-y-auto space-y-1.5 pr-1">
-                        <p class="text-[11px] text-gray-500 italic">No reports recorded yet.</p>
-                    </div>
-                </div>
+                <p id="hazard-location" class="text-xs text-emerald-300 mt-0.5"><i class="fa-solid fa-location-dot mr-1"></i><span id="location-text">Ready for voice reporting...</span></p>
+                <p id="speech-transcript" class="text-xs text-gray-400 mt-2 italic bg-gray-950/40 p-2 rounded border border-gray-800">Transcript feed...</p>
             </div>
         </section>
 
@@ -188,7 +174,7 @@
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="font-bold text-sm text-white"><i class="fa-solid fa-map-location-dot text-emerald-500 mr-2"></i>Bidhannagar Municipal GIS Map</h2>
                     <div class="flex gap-2">
-                        <button onclick="clearAllHistory()" class="px-3 py-1 rounded bg-red-950/60 hover:bg-red-900/80 text-xs border border-red-800 text-red-300">Clear History</button>
+                        <button onclick="clearAllHistory()" class="px-3 py-1 rounded bg-red-950/60 hover:bg-red-900/80 text-xs border border-red-800 text-red-300">Clear All</button>
                         <button onclick="resetMapView()" class="px-3 py-1 rounded bg-gray-900 hover:bg-gray-800 text-xs border border-gray-700 text-gray-300">Reset View</button>
                     </div>
                 </div>
@@ -208,10 +194,9 @@
         let map;
         let selectedLang = 'hi-IN';
         let recognition = null;
-        let activeMarkersList = []; 
-        let activeLatestMarker = null;
+        let incidentQueue = []; // Priority queue array
 
-        // Landmarks Database
+        // Bidhannagar GIS Database
         const bmcDatabase = [
             { keywords: ['college', 'college-more'], name: 'College More, Salt Lake Sector V', coords: [22.5732, 88.4331] },
             { keywords: ['karunamoyee', 'karunamoye', 'karunamoyee bus'], name: 'Karunamoyee Bus Station, Salt Lake', coords: [22.5830, 88.4180] },
@@ -224,18 +209,13 @@
             { keywords: ['sector 5', 'sector v', 'sec 5'], name: 'Salt Lake Sector V Central', coords: [22.5697, 88.4337] },
             { keywords: ['sector 1', 'sec 1'], name: 'Salt Lake Sector 1 Block A-BD', coords: [22.5930, 88.4020] },
             { keywords: ['sector 2', 'sec 2'], name: 'Salt Lake Sector 2 Block BK-CL', coords: [22.5870, 88.4150] },
-            { keywords: ['sector 3', 'sec 3'], name: 'Salt Lake Sector 3 Block FD-IA', coords: [22.5750, 88.4110] },
             { keywords: ['nicco park', 'niccopark'], name: 'Nicco Park Water Area, Salt Lake', coords: [22.5714, 88.4211] },
             { keywords: ['dlf', 'dlf 1', 'dlf building'], name: 'DLF IT Park 1, Sector V', coords: [22.5780, 88.4370] },
-            { keywords: ['new town', 'newtown'], name: 'New Town Action Area 1', coords: [22.5889, 88.4790] },
-            { keywords: ['chinar park'], name: 'Chinar Park Crossing, Rajarhat', coords: [22.6252, 88.4520] },
             { keywords: ['lake town', 'laketown'], name: 'Lake Town Clock Tower', coords: [22.6010, 88.3970] },
-            { keywords: ['ultadanga', 'ultadanga crossing'], name: 'Ultadanga Hudco Stop', coords: [22.5970, 88.3870] },
-            { keywords: ['kestopur'], name: 'Kestopur VIP Road Junction', coords: [22.6080, 88.4230] },
-            { keywords: ['vip road'], name: 'VIP Road Salt Lake Bypass', coords: [22.6120, 88.4310] }
+            { keywords: ['ultadanga', 'ultadanga crossing'], name: 'Ultadanga Hudco Stop', coords: [22.5970, 88.3870] }
         ];
 
-        const outOfBoundsKeywords = ['mumbai', 'delhi', 'bangalore', 'marine drive', 'howrah', 'park street', 'esplanade', 'alipore', 'kolkata airport'];
+        const outOfBoundsKeywords = ['mumbai', 'delhi', 'bangalore', 'marine drive', 'howrah', 'park street', 'esplanade', 'alipore'];
 
         document.addEventListener('DOMContentLoaded', () => {
             initLeafletMap();
@@ -250,7 +230,7 @@
             }).addTo(map);
 
             const tiuMarker = L.marker(TIU_COORDS).addTo(map);
-            tiuMarker.bindPopup("<b>Techno India University</b><br>Salt Lake Sector V (BMC HQ Zone)").openPopup();
+            tiuMarker.bindPopup("<b>Techno India University</b><br>BMC HQ Monitoring Center").openPopup();
         }
 
         function switchView(mode) {
@@ -264,6 +244,7 @@
                 admPanel.classList.remove('hidden');
                 btnAdm.className = "px-3 py-1 rounded-md bg-emerald-600 text-white transition";
                 btnCit.className = "px-3 py-1 rounded-md text-gray-400 hover:text-white transition";
+                renderAdminQueue();
             } else {
                 admPanel.classList.add('hidden');
                 citPanel.classList.remove('hidden');
@@ -289,7 +270,7 @@
                 recognition.interimResults = false;
 
                 recognition.onstart = () => {
-                    document.getElementById('mic-status').innerText = "Listening... Speak location inside Bidhannagar!";
+                    document.getElementById('mic-status').innerText = "Listening... Speak hazard and place!";
                     document.getElementById('mic-btn').classList.add('animate-pulse', 'bg-red-600');
                 };
 
@@ -300,12 +281,12 @@
                 };
 
                 recognition.onend = () => {
-                    document.getElementById('mic-status').innerText = "Click Mic & Speak Location";
+                    document.getElementById('mic-status').innerText = "Click & Speak Hazard Location";
                     document.getElementById('mic-btn').classList.remove('animate-pulse', 'bg-red-600');
                 };
 
                 recognition.onerror = () => {
-                    document.getElementById('mic-status').innerText = "Voice error. Try typing location below.";
+                    document.getElementById('mic-status').innerText = "Error. Try typing location below.";
                     document.getElementById('mic-btn').classList.remove('animate-pulse', 'bg-red-600');
                 };
             }
@@ -313,22 +294,38 @@
 
         function toggleSpeechRecognition() {
             if (!recognition) {
-                alert("Browser voice recognition unavailable. Please type input below.");
+                alert("Browser speech recognition unavailable. Type input below.");
                 return;
             }
             recognition.lang = selectedLang;
             recognition.start();
         }
 
+        // Smart Severity Logic Matrix
+        function calculatePriority(queryText) {
+            const text = queryText.toLowerCase();
+
+            // P1 Critical (Life Threat / Fire / Major Accident) -> Score 90-100
+            if (text.includes('aag') || text.includes('fire') || text.includes('accident') || text.includes('blast') || text.includes('wire') || text.includes('emergency') || text.includes('current')) {
+                return { level: 'P1-CRITICAL', score: 98, badgeClass: 'bg-red-500/20 text-red-400 border-red-500/40', markerClass: 'marker-p1', icon: 'fa-fire-flame-curved' };
+            }
+            // P2 High (Waterlogging / Traffic / Drain) -> Score 60-89
+            if (text.includes('paani') || text.includes('water') || text.includes('flood') || text.includes('jam') || text.includes('traffic') || text.includes('tree') || text.includes('drain')) {
+                return { level: 'P2-HIGH', score: 75, badgeClass: 'bg-orange-500/20 text-orange-400 border-orange-500/40', markerClass: 'marker-p2', icon: 'fa-water' };
+            }
+            // P3 Normal (Garbage / Light / Pothole) -> Score 10-59
+            return { level: 'P3-NORMAL', score: 35, badgeClass: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40', markerClass: 'marker-p3', icon: 'fa-triangle-exclamation' };
+        }
+
         async function handleLocationQuery(queryText) {
             document.getElementById('speech-transcript').innerText = `"${queryText}"`;
-            document.getElementById('location-text').innerText = "Analyzing Bidhannagar GIS Database...";
+            document.getElementById('location-text').innerText = "Analyzing Bidhannagar Priority Matrix...";
 
             const textLower = queryText.toLowerCase();
 
             for (let outWord of outOfBoundsKeywords) {
                 if (textLower.includes(outWord)) {
-                    alert("Out of Jurisdiction! Please report hazards within Bidhannagar Municipal Corporation (Salt Lake / Sector V Zone).");
+                    alert("Out of Jurisdiction! Report within Bidhannagar Corporation.");
                     document.getElementById('location-text').innerText = "Outside BMC Jurisdiction!";
                     return;
                 }
@@ -349,7 +346,7 @@
 
             if (!lat) {
                 try {
-                    const cleanWord = textLower.replace(/me|par|pe|hua|hai|gaya|gayi|paani|water|flood|fire|accident|emergency|bhar|lag|lagi/g, '').trim();
+                    const cleanWord = textLower.replace(/me|par|pe|hua|hai|gaya|gayi|paani|water|flood|fire|aag|accident|emergency|bhar|lag|lagi/g, '').trim();
                     const searchParam = encodeURIComponent(`${cleanWord} Salt Lake Sector 5 Bidhannagar Kolkata`);
                     const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${searchParam}&limit=1`);
                     const results = await response.json();
@@ -357,137 +354,152 @@
                     if (results && results.length > 0) {
                         lat = parseFloat(results[0].lat);
                         lon = parseFloat(results[0].lon);
-                        displayAddress = `${cleanWord.toUpperCase()}, Bidhannagar Municipal Area`;
+                        displayAddress = `${cleanWord.toUpperCase()}, Bidhannagar Area`;
                     }
                 } catch (err) {
-                    console.error("Geocoding Error:", err);
+                    console.error(err);
                 }
             }
 
             if (!lat) {
                 lat = 22.5697;
                 lon = 88.4337;
-                displayAddress = `${queryText} (Bidhannagar Sector V Zone)`;
+                displayAddress = `${queryText} (Bidhannagar Zone)`;
             }
+
+            // Priority Calculation
+            const pInfo = calculatePriority(queryText);
 
             document.getElementById('location-text').innerText = displayAddress;
-            document.getElementById('hazard-title').innerText = "BMC Ward Alert Registered";
+            document.getElementById('hazard-title').innerText = `Alert Logged [${pInfo.level}]`;
 
-            if (activeLatestMarker && activeLatestMarker.status !== 'resolved') {
-                const historyIcon = L.divIcon({
-                    className: 'custom-marker',
-                    html: `<div class="marker-pin-history"><i class="fa-solid fa-location-dot text-[10px]"></i></div>`,
-                    iconSize: [26, 26],
-                    iconAnchor: [13, 13]
-                });
-                activeLatestMarker.marker.setIcon(historyIcon);
-            }
-
+            // Custom Leaflet Marker Icon Based on Priority
             const customMarkerIcon = L.divIcon({
                 className: 'custom-marker',
-                html: `<div class="marker-pin-active"><i class="fa-solid fa-triangle-exclamation text-xs"></i></div>`,
+                html: `<div class="${pInfo.markerClass}"><i class="fa-solid ${pInfo.icon} text-xs"></i></div>`,
                 iconSize: [32, 32],
                 iconAnchor: [16, 16]
             });
 
             const newMarker = L.marker([lat, lon], { icon: customMarkerIcon }).addTo(map);
-            newMarker.bindPopup(`<b>BMC Emergency Dispatch:</b><br>${displayAddress}`);
+            newMarker.bindPopup(`<b>[${pInfo.level}] BMC Alert:</b><br>${displayAddress}<br><i>"${queryText}"</i>`);
 
             const incidentObj = { 
+                id: Date.now(),
                 marker: newMarker, 
                 address: displayAddress, 
                 query: queryText, 
+                priority: pInfo,
                 time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 status: 'active'
             };
 
-            activeLatestMarker = incidentObj;
-            activeMarkersList.push(incidentObj);
-
-            renderIncidentHistory();
-
-            map.flyTo([lat, lon], 16, { animate: true, duration: 1.5 });
-            
-            setTimeout(() => {
-                newMarker.openPopup();
-            }, 1600);
-        }
-
-        function dispatchWardTeam() {
-            if (!activeLatestMarker || activeLatestMarker.status === 'resolved') {
-                alert("No active unresolved hazard to dispatch team!");
-                return;
-            }
-            alert(`BMC Response Team Dispatched to: ${activeLatestMarker.address}`);
-            document.getElementById('hazard-title').innerText = "BMC Response Team En-Route 🚚";
-            activeLatestMarker.marker.bindPopup(`<b>BMC Status: Team Dispatched!</b><br>${activeLatestMarker.address}`).openPopup();
-        }
-
-        function markLatestResolved() {
-            if (!activeLatestMarker || activeLatestMarker.status === 'resolved') {
-                alert("No active unresolved hazard to resolve!");
-                return;
-            }
-
-            activeLatestMarker.status = 'resolved';
-
-            const resolvedIcon = L.divIcon({
-                className: 'custom-marker',
-                html: `<div class="marker-pin-resolved"><i class="fa-solid fa-check text-xs"></i></div>`,
-                iconSize: [28, 28],
-                iconAnchor: [14, 14]
+            // Push to Queue and Sort (Highest Priority Score Comes FIRST)
+            incidentQueue.push(incidentObj);
+            incidentQueue.sort((a, b) => {
+                if (a.status === 'resolved' && b.status !== 'resolved') return 1;
+                if (a.status !== 'resolved' && b.status === 'resolved') return -1;
+                return b.priority.score - a.priority.score; // Higher score first
             });
 
-            activeLatestMarker.marker.setIcon(resolvedIcon);
-            activeLatestMarker.marker.bindPopup(`<b>BMC Status: RESOLVED ✅</b><br>${activeLatestMarker.address}`).openPopup();
+            renderAdminQueue();
 
-            document.getElementById('hazard-title').innerText = "Hazard RESOLVED & Closed ✅";
-            renderIncidentHistory();
-            alert(`Hazard at "${activeLatestMarker.address}" marked as RESOLVED by BMC Officers.`);
+            map.flyTo([lat, lon], 16, { animate: true, duration: 1.2 });
+            setTimeout(() => newMarker.openPopup(), 1300);
         }
 
-        function renderIncidentHistory() {
-            const listContainer = document.getElementById('incident-history-list');
-            document.getElementById('incident-count').innerText = activeMarkersList.length;
+        function renderAdminQueue() {
+            const listContainer = document.getElementById('admin-queue-list');
+            const activeCount = incidentQueue.filter(i => i.status === 'active').length;
+            document.getElementById('incident-count').innerText = activeCount;
 
-            if (activeMarkersList.length === 0) {
-                listContainer.innerHTML = `<p class="text-[11px] text-gray-500 italic">No reports recorded yet.</p>`;
+            if (incidentQueue.length === 0) {
+                listContainer.innerHTML = `<p class="text-xs text-gray-500 italic py-4 text-center">No active issues in priority queue.</p>`;
                 return;
             }
 
             let html = '';
-            for (let i = activeMarkersList.length - 1; i >= 0; i--) {
-                const item = activeMarkersList[i];
+            incidentQueue.forEach((item, index) => {
                 const isResolved = (item.status === 'resolved');
                 html += `
-                    <div class="flex items-start justify-between p-2 rounded bg-gray-900/80 border ${isResolved ? 'border-emerald-500/50 bg-emerald-950/20' : 'border-gray-800'} text-xs">
-                        <div>
-                            <p class="font-semibold text-gray-200 text-[11px] flex items-center">
-                                ${isResolved ? '<span class="text-emerald-400 mr-1">✅ [RESOLVED]</span>' : '<span class="text-red-400 mr-1">🔴 [ACTIVE]</span>'}
-                                ${item.address}
-                            </p>
-                            <p class="text-[10px] text-gray-400 italic">"${item.query}"</p>
+                    <div class="p-3 rounded-xl bg-gray-900/90 border ${isResolved ? 'border-emerald-500/30 opacity-60' : (item.priority.level.includes('P1') ? 'border-red-500/60 bg-red-950/20' : 'border-gray-800')} flex flex-col space-y-2">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-black text-gray-400">#${index + 1}</span>
+                                <span class="px-2 py-0.5 text-[10px] font-extrabold rounded border ${isResolved ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : item.priority.badgeClass}">
+                                    ${isResolved ? 'RESOLVED ✅' : item.priority.level}
+                                </span>
+                            </div>
+                            <span class="text-[10px] text-gray-400 font-mono">${item.time}</span>
                         </div>
-                        <span class="text-[10px] text-emerald-400 font-mono">${item.time}</span>
+
+                        <div>
+                            <p class="font-semibold text-xs text-white">${item.address}</p>
+                            <p class="text-[11px] text-gray-400 italic">"${item.query}"</p>
+                        </div>
+
+                        ${!isResolved ? `
+                            <div class="flex gap-2 pt-1">
+                                <button onclick="focusOnMap(${item.id})" class="flex-1 py-1 px-2 rounded bg-gray-800 hover:bg-gray-700 text-[10px] text-gray-300 font-semibold">
+                                    <i class="fa-solid fa-location-crosshairs mr-1"></i>Locate
+                                </button>
+                                <button onclick="resolveByAdmin(${item.id})" class="flex-1 py-1 px-2 rounded bg-emerald-600 hover:bg-emerald-500 text-[10px] text-white font-bold">
+                                    <i class="fa-solid fa-check mr-1"></i>Resolve Priority
+                                </button>
+                            </div>
+                        ` : ''}
                     </div>
                 `;
-            }
+            });
+
             listContainer.innerHTML = html;
         }
 
+        function focusOnMap(id) {
+            const item = incidentQueue.find(i => i.id === id);
+            if (item) {
+                map.flyTo(item.marker.getLatLng(), 16, { animate: true });
+                item.marker.openPopup();
+            }
+        }
+
+        function resolveByAdmin(id) {
+            const item = incidentQueue.find(i => i.id === id);
+            if (item) {
+                item.status = 'resolved';
+                
+                const resolvedIcon = L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div class="marker-resolved"><i class="fa-solid fa-check text-xs"></i></div>`,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14]
+                });
+
+                item.marker.setIcon(resolvedIcon);
+                item.marker.bindPopup(`<b>Status: RESOLVED ✅</b><br>${item.address}`);
+                
+                // Re-sort Queue so resolved issues drop to the bottom
+                incidentQueue.sort((a, b) => {
+                    if (a.status === 'resolved' && b.status !== 'resolved') return 1;
+                    if (a.status !== 'resolved' && b.status === 'resolved') return -1;
+                    return b.priority.score - a.priority.score;
+                });
+
+                renderAdminQueue();
+                alert(`Hazard at "${item.address}" marked as RESOLVED by BMC Officer.`);
+            }
+        }
+
         function clearAllHistory() {
-            activeMarkersList.forEach(item => map.removeLayer(item.marker));
-            activeMarkersList = [];
-            activeLatestMarker = null;
-            renderIncidentHistory();
-            document.getElementById('location-text').innerText = "History Cleared.";
+            incidentQueue.forEach(item => map.removeLayer(item.marker));
+            incidentQueue = [];
+            renderAdminQueue();
+            document.getElementById('location-text').innerText = "Queue Cleared.";
         }
 
         function submitManualText() {
             const inputVal = document.getElementById('manual-text').value;
-            if (inputVal.trim()) {
-                handleLocationQuery(inputVal);
-            }
+            if (inputVal.trim()) handleLocationQuery(inputVal);
         }
 
         function resetMapView() {
