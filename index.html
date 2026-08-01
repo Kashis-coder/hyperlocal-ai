@@ -96,50 +96,46 @@
         <!-- Controls / Admin Queue Section -->
         <section class="lg:col-span-5 flex flex-col space-y-5">
             
-            <!-- Citizen Voice Panel -->
+            <!-- Citizen Direct Input Panel -->
             <div id="citizen-panel" class="glass-panel rounded-2xl p-5 shadow-2xl">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="font-heading font-bold text-lg text-white"><i class="fa-solid fa-microphone text-emerald-500 mr-2"></i>BMC Voice Reporting</h2>
-                    <div class="flex bg-gray-900 p-1 rounded-lg border border-gray-800 text-xs">
-                        <button id="lang-hi" onclick="setLanguage('hi-IN')" class="px-2 py-1 rounded font-semibold bg-emerald-600 text-white">हिंदी</button>
-                        <button id="lang-bn" onclick="setLanguage('bn-IN')" class="px-2 py-1 rounded font-semibold text-gray-400">বাংলা</button>
-                        <button id="lang-en" onclick="setLanguage('en-US')" class="px-2 py-1 rounded font-semibold text-gray-400">English</button>
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="font-heading font-bold text-lg text-white"><i class="fa-solid fa-bullhorn text-emerald-500 mr-2"></i>Report Civic Hazard</h2>
+                    <span class="text-[10px] text-gray-400 font-mono bg-gray-900 px-2 py-0.5 rounded border border-gray-800">FAST REPORT MODE</span>
+                </div>
+
+                <!-- Text Search Box -->
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs text-gray-300 font-medium mb-1 block">Describe issue and location inside Bidhannagar:</label>
+                        <div class="flex gap-2">
+                            <input id="manual-text" type="text" placeholder="e.g. City Centre 1 me aag lag gayi hai" class="flex-1 px-3 py-2.5 rounded-xl bg-gray-950 border border-gray-700 text-xs text-white focus:outline-none focus:border-emerald-500 shadow-inner" onkeypress="if(event.key === 'Enter') submitManualText()">
+                            <button onclick="submitManualText()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-xl text-white shadow-lg transition">
+                                <i class="fa-solid fa-paper-plane mr-1"></i> Submit
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Mic Box -->
-                <div class="flex flex-col items-center justify-center py-5 px-4 rounded-xl bg-gray-950/60 border border-gray-800 text-center">
-                    <button id="mic-btn" onclick="toggleSpeechRecognition()" class="w-20 h-20 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center text-3xl shadow-xl transition transform active:scale-95">
-                        <i id="mic-icon" class="fa-solid fa-microphone"></i>
-                    </button>
-                    <p id="mic-status" class="mt-3 text-xs font-semibold text-gray-300">Click & Speak (e.g., "City Centre 1 me aag lag gayi hai")</p>
-                    <p id="speech-feedback" class="mt-1 text-xs text-emerald-400 min-h-[1.25rem] italic">Listening for voice hazard report...</p>
-                </div>
-
-                <!-- Presets with Priority Flavors -->
-                <div class="mt-4 pt-3 border-t border-gray-800">
-                    <p class="text-[11px] text-gray-400 mb-2 font-medium">Test Priority Keywords Presets:</p>
+                <!-- One-Click Preset Buttons (For Quick Demo) -->
+                <div class="mt-5 pt-4 border-t border-gray-800">
+                    <p class="text-[11px] text-gray-400 mb-2.5 font-semibold"><i class="fa-solid fa-bolt text-yellow-500 mr-1"></i> Quick Test Scenario Buttons:</p>
                     <div class="grid grid-cols-2 gap-2">
-                        <button onclick="handleLocationQuery('City Centre 1 me AAG LAG GAYI HAI')" class="p-2 rounded bg-red-950/30 border border-red-800/50 hover:border-red-500 text-[11px] text-left text-red-300">
-                            🔴 Fire Alert (P1 Critical)
+                        <button onclick="handleLocationQuery('City Centre 1 me AAG LAG GAYI HAI')" class="p-2.5 rounded-xl bg-red-950/40 border border-red-800/60 hover:border-red-500 text-[11px] text-left text-red-300 font-medium transition flex items-center justify-between">
+                            <span>🔴 Fire Alert</span>
+                            <span class="text-[9px] bg-red-900/60 text-red-200 px-1.5 py-0.5 rounded font-mono">P1</span>
                         </button>
-                        <button onclick="handleLocationQuery('College More Salt Lake me PAANI BHAR GAYA HAI')" class="p-2 rounded bg-orange-950/30 border border-orange-800/50 hover:border-orange-500 text-[11px] text-left text-orange-300">
-                            🟠 Waterlogging (P2 High)
+                        <button onclick="handleLocationQuery('College More Salt Lake me PAANI BHAR GAYA HAI')" class="p-2.5 rounded-xl bg-orange-950/40 border border-orange-800/60 hover:border-orange-500 text-[11px] text-left text-orange-300 font-medium transition flex items-center justify-between">
+                            <span>🟠 Waterlogging</span>
+                            <span class="text-[9px] bg-orange-900/60 text-orange-200 px-1.5 py-0.5 rounded font-mono">P2</span>
                         </button>
-                        <button onclick="handleLocationQuery('Techno India ke paas ACCIDENT HUA HAI')" class="p-2 rounded bg-red-950/30 border border-red-800/50 hover:border-red-500 text-[11px] text-left text-red-300">
-                            🔴 Road Accident (P1 Critical)
+                        <button onclick="handleLocationQuery('Techno India ke paas ACCIDENT HUA HAI')" class="p-2.5 rounded-xl bg-red-950/40 border border-red-800/60 hover:border-red-500 text-[11px] text-left text-red-300 font-medium transition flex items-center justify-between">
+                            <span>🔴 Road Accident</span>
+                            <span class="text-[9px] bg-red-900/60 text-red-200 px-1.5 py-0.5 rounded font-mono">P1</span>
                         </button>
-                        <button onclick="handleLocationQuery('Karunamoyee me STREETLIGHT KHARAB HAI')" class="p-2 rounded bg-yellow-950/30 border border-yellow-800/50 hover:border-yellow-500 text-[11px] text-left text-yellow-300">
-                            🟡 Streetlight Off (P3 Normal)
+                        <button onclick="handleLocationQuery('Karunamoyee me STREETLIGHT KHARAB HAI')" class="p-2.5 rounded-xl bg-yellow-950/40 border border-yellow-800/60 hover:border-yellow-500 text-[11px] text-left text-yellow-300 font-medium transition flex items-center justify-between">
+                            <span>🟡 Streetlight Off</span>
+                            <span class="text-[9px] bg-yellow-900/60 text-yellow-200 px-1.5 py-0.5 rounded font-mono">P3</span>
                         </button>
-                    </div>
-                </div>
-
-                <!-- Manual Input -->
-                <div class="mt-4">
-                    <div class="flex gap-2">
-                        <input id="manual-text" type="text" placeholder="Type hazard and place inside Bidhannagar..." class="flex-1 px-3 py-2 rounded-lg bg-gray-900 border border-gray-700 text-xs text-white focus:outline-none focus:border-emerald-500">
-                        <button onclick="submitManualText()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg text-white">Report</button>
                     </div>
                 </div>
             </div>
@@ -163,8 +159,7 @@
             <div id="triage-output-card" class="glass-card rounded-xl p-4 border-l-4 border-l-emerald-500">
                 <span id="priority-badge" class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">LATEST DISPATCH STATUS</span>
                 <h3 id="hazard-title" class="font-bold text-base text-white mt-1">Bidhannagar Jurisdiction Monitor</h3>
-                <p id="hazard-location" class="text-xs text-emerald-300 mt-0.5"><i class="fa-solid fa-location-dot mr-1"></i><span id="location-text">Ready for voice reporting...</span></p>
-                <p id="speech-transcript" class="text-xs text-gray-400 mt-2 italic bg-gray-950/40 p-2 rounded border border-gray-800">Transcript feed...</p>
+                <p id="hazard-location" class="text-xs text-emerald-300 mt-0.5"><i class="fa-solid fa-location-dot mr-1"></i><span id="location-text">Ready for citizen report...</span></p>
             </div>
         </section>
 
@@ -190,10 +185,7 @@
 
     <script>
         const TIU_COORDS = [22.5760, 88.4343]; 
-        
         let map;
-        let selectedLang = 'hi-IN';
-        let recognition = null;
         let incidentQueue = []; // Priority queue array
 
         // Bidhannagar GIS Database
@@ -219,7 +211,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             initLeafletMap();
-            initVoiceRecognition();
         });
 
         function initLeafletMap() {
@@ -253,54 +244,6 @@
             }
         }
 
-        function setLanguage(lang) {
-            selectedLang = lang;
-            document.querySelectorAll('[id^="lang-"]').forEach(btn => {
-                btn.className = btn.id === `lang-${lang.split('-')[0]}` 
-                    ? "px-2 py-1 rounded font-semibold bg-emerald-600 text-white" 
-                    : "px-2 py-1 rounded font-semibold text-gray-400";
-            });
-        }
-
-        function initVoiceRecognition() {
-            const SpeechAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (SpeechAPI) {
-                recognition = new SpeechAPI();
-                recognition.continuous = false;
-                recognition.interimResults = false;
-
-                recognition.onstart = () => {
-                    document.getElementById('mic-status').innerText = "Listening... Speak hazard and place!";
-                    document.getElementById('mic-btn').classList.add('animate-pulse', 'bg-red-600');
-                };
-
-                recognition.onresult = (e) => {
-                    const speechText = e.results[0][0].transcript;
-                    document.getElementById('speech-feedback').innerText = `"${speechText}"`;
-                    handleLocationQuery(speechText);
-                };
-
-                recognition.onend = () => {
-                    document.getElementById('mic-status').innerText = "Click & Speak Hazard Location";
-                    document.getElementById('mic-btn').classList.remove('animate-pulse', 'bg-red-600');
-                };
-
-                recognition.onerror = () => {
-                    document.getElementById('mic-status').innerText = "Error. Try typing location below.";
-                    document.getElementById('mic-btn').classList.remove('animate-pulse', 'bg-red-600');
-                };
-            }
-        }
-
-        function toggleSpeechRecognition() {
-            if (!recognition) {
-                alert("Browser speech recognition unavailable. Type input below.");
-                return;
-            }
-            recognition.lang = selectedLang;
-            recognition.start();
-        }
-
         // Smart Severity Logic Matrix
         function calculatePriority(queryText) {
             const text = queryText.toLowerCase();
@@ -318,7 +261,6 @@
         }
 
         async function handleLocationQuery(queryText) {
-            document.getElementById('speech-transcript').innerText = `"${queryText}"`;
             document.getElementById('location-text').innerText = "Analyzing Bidhannagar Priority Matrix...";
 
             const textLower = queryText.toLowerCase();
@@ -406,6 +348,9 @@
 
             map.flyTo([lat, lon], 16, { animate: true, duration: 1.2 });
             setTimeout(() => newMarker.openPopup(), 1300);
+
+            // Clear input box
+            document.getElementById('manual-text').value = '';
         }
 
         function renderAdminQueue() {
