@@ -29,7 +29,7 @@
                     },
                     colors: {
                         brand: {
-                            500: '#059669', // Emerald/Green theme for Civic Corporation
+                            500: '#059669',
                             600: '#047857',
                         }
                     }
@@ -95,21 +95,21 @@
                     <button id="mic-btn" onclick="toggleSpeechRecognition()" class="w-20 h-20 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center text-3xl shadow-xl transition transform active:scale-95">
                         <i id="mic-icon" class="fa-solid fa-microphone"></i>
                     </button>
-                    <p id="mic-status" class="mt-4 text-xs font-semibold text-gray-300">Click Mic & Speak Area (e.g., "Techno India University Sector 5 waterlogging")</p>
+                    <p id="mic-status" class="mt-4 text-xs font-semibold text-gray-300">Click Mic & Speak Area (e.g., "Karunamoyee bus stand me emergency hazard hai")</p>
                     <p id="speech-feedback" class="mt-1 text-xs text-emerald-400 min-h-[1.25rem] italic">Listening for voice location input...</p>
                 </div>
 
-                <!-- Bidhannagar BMC Local Test Hotspots -->
+                <!-- Quick Presets -->
                 <div class="mt-4 pt-3 border-t border-gray-800">
                     <p class="text-[11px] text-gray-400 mb-2 font-medium">Bidhannagar BMC Quick Presets:</p>
                     <div class="grid grid-cols-2 gap-2">
-                        <button onclick="handleLocationQuery('Techno India University, Sector 5')" class="p-2 rounded bg-gray-900 border border-gray-800 hover:border-emerald-500 text-[11px] text-left text-gray-300">
+                        <button onclick="handleLocationQuery('Techno India University Sector 5')" class="p-2 rounded bg-gray-900 border border-gray-800 hover:border-emerald-500 text-[11px] text-left text-gray-300">
                             🎓 Techno India Univ (TIU)
                         </button>
-                        <button onclick="handleLocationQuery('College More, Sector 5 Salt Lake')" class="p-2 rounded bg-gray-900 border border-gray-800 hover:border-emerald-500 text-[11px] text-left text-gray-300">
+                        <button onclick="handleLocationQuery('College More Salt Lake')" class="p-2 rounded bg-gray-900 border border-gray-800 hover:border-emerald-500 text-[11px] text-left text-gray-300">
                             🏬 College More Sector 5
                         </button>
-                        <button onclick="handleLocationQuery('Karunamoyee Bus Terminus Salt Lake')" class="p-2 rounded bg-gray-900 border border-gray-800 hover:border-emerald-500 text-[11px] text-left text-gray-300">
+                        <button onclick="handleLocationQuery('Karunamoyee Bus Terminus')" class="p-2 rounded bg-gray-900 border border-gray-800 hover:border-emerald-500 text-[11px] text-left text-gray-300">
                             🚌 Karunamoyee
                         </button>
                         <button onclick="handleLocationQuery('City Centre 1 Salt Lake')" class="p-2 rounded bg-gray-900 border border-gray-800 hover:border-emerald-500 text-[11px] text-left text-gray-300">
@@ -154,34 +154,32 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <script>
-        // Techno India University Coordinates (Salt Lake Sector 5, Kolkata)
         const TIU_COORDS = [22.5760, 88.4343]; 
         
-        // Bidhannagar Municipal Corporation (BMC) Boundary Geofence Limits
+        // Expanded Bidhannagar Municipal Corporation (BMC) Boundary Geofence Limits
         const BMC_BOUNDS = L.latLngBounds(
-            L.latLng(22.5200, 88.3800), // South-West Limit
-            L.latLng(22.6400, 88.5000)  // North-East Limit
+            L.latLng(22.4800, 88.3200), // Extended South-West Limit
+            L.latLng(22.6800, 88.5500)  // Extended North-East Limit
         );
 
         let map, markersGroup;
         let selectedLang = 'hi-IN';
         let recognition = null;
 
-        // Bidhannagar Area Pre-cached Local Database
-        const bmcLocations = {
-            'techno india': [22.5760, 88.4343],
-            'techno india university': [22.5760, 88.4343],
-            'tiu': [22.5760, 88.4343],
-            'sector 5': [22.5697, 88.4337],
-            'sector-5': [22.5697, 88.4337],
-            'college more': [22.5732, 88.4331],
-            'karunamoyee': [22.5830, 88.4180],
-            'city centre': [22.5880, 88.4080],
-            'salt lake stadium': [22.5690, 88.4010],
-            'new town': [22.5889, 88.4790],
-            'lake town': [22.6010, 88.3970],
-            'ultadanga': [22.5970, 88.3870]
-        };
+        // Comprehensive Bidhannagar Local Landmarks Database (Guaranteed Hits)
+        const bmcLocations = [
+            { keys: ['college more', 'college-more'], name: 'College More, Salt Lake Sector V', coords: [22.5732, 88.4331] },
+            { keys: ['karunamoyee', 'karunamoye', 'karunamoyee bus'], name: 'Karunamoyee Bus Station, Salt Lake', coords: [22.5830, 88.4180] },
+            { keys: ['techno india', 'tiu', 'techno'], name: 'Techno India University, Sector V', coords: [22.5760, 88.4343] },
+            { keys: ['sector 5', 'sector-5', 'sec 5', 'sector v'], name: 'Salt Lake Sector V Central', coords: [22.5697, 88.4337] },
+            { keys: ['city centre', 'city centre 1', 'cc1'], name: 'City Centre 1, Salt Lake', coords: [22.5880, 88.4080] },
+            { keys: ['stadium', 'salt lake stadium'], name: 'Salt Lake Stadium, Salt Lake', coords: [22.5690, 88.4010] },
+            { keys: ['wipro', 'wipro crossing'], name: 'Wipro Crossing, Sector V', coords: [22.5795, 88.4362] },
+            { keys: ['webel', 'webel more'], name: 'Webel More, Sector V', coords: [22.5710, 88.4340] },
+            { keys: ['new town', 'newtown'], name: 'New Town, Rajarhat (BMC Extended)', coords: [22.5889, 88.4790] },
+            { keys: ['lake town', 'laketown'], name: 'Lake Town (BMC Boundary)', coords: [22.6010, 88.3970] },
+            { keys: ['ultadanga', 'ultadanga station'], name: 'Ultadanga Crossing', coords: [22.5970, 88.3870] }
+        ];
 
         document.addEventListener('DOMContentLoaded', () => {
             initLeafletMap();
@@ -189,7 +187,6 @@
         });
 
         function initLeafletMap() {
-            // Centered at Techno India University with Geofence Restraints
             map = L.map('map', {
                 maxBounds: BMC_BOUNDS,
                 maxBoundsViscosity: 0.8
@@ -201,7 +198,7 @@
 
             markersGroup = L.layerGroup().addTo(map);
 
-            // Add Permanent Techno India University Marker for Context
+            // Campus Base Marker
             const tiuMarker = L.marker(TIU_COORDS).addTo(map);
             tiuMarker.bindPopup("<b>Techno India University</b><br>Salt Lake Sector V (BMC HQ Zone)").openPopup();
         }
@@ -254,29 +251,38 @@
             recognition.start();
         }
 
+        // Clean speech text from extra conversational phrases
+        function cleanSpeechText(text) {
+            return text.toLowerCase()
+                .replace(/me|par|pe|hua|hai|gaya|gayi|paani|water|flood|fire|accident|emergency|bhar|lag|lagi|sthan|jagah/g, '')
+                .trim();
+        }
+
         async function handleLocationQuery(queryText) {
             document.getElementById('speech-transcript').innerText = `"${queryText}"`;
             document.getElementById('location-text').innerText = "Validating BMC Jurisdiction...";
 
-            let cleanQuery = queryText.toLowerCase().replace(/me|par|pe|hua|hai|gaya|paani|water|flood|fire|accident|emergency/g, '').trim();
+            const rawLower = queryText.toLowerCase();
+            const cleanedQuery = cleanSpeechText(queryText);
+
             let lat = null;
             let lon = null;
             let displayAddress = queryText;
 
-            // Check 1: Check Local Bidhannagar Database
-            for (let key in bmcLocations) {
-                if (cleanQuery.includes(key)) {
-                    lat = bmcLocations[key][0];
-                    lon = bmcLocations[key][1];
-                    displayAddress = key.toUpperCase() + " (Bidhannagar Ward Area)";
+            // Step 1: Pre-cached Fast Local Landmark Check (Matches College More, Karunamoyee, TIU, etc.)
+            for (let item of bmcLocations) {
+                if (item.keys.some(k => rawLower.includes(k) || cleanedQuery.includes(k))) {
+                    lat = item.coords[0];
+                    lon = item.coords[1];
+                    displayAddress = item.name;
                     break;
                 }
             }
 
-            // Check 2: Live Geocoding restricted strictly to Salt Lake / Bidhannagar
+            // Step 2: Live Geocoding for unlisted local spots
             if (!lat) {
                 try {
-                    const searchParam = encodeURIComponent(cleanQuery + " Bidhannagar Salt Lake Kolkata West Bengal");
+                    const searchParam = encodeURIComponent(`${cleanedQuery} Salt Lake Kolkata West Bengal India`);
                     const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${searchParam}&limit=1`);
                     const results = await response.json();
 
@@ -284,7 +290,6 @@
                         let tempLat = parseFloat(results[0].lat);
                         let tempLon = parseFloat(results[0].lon);
 
-                        // Geofence check: Ensure location is within BMC limits
                         if (BMC_BOUNDS.contains([tempLat, tempLon])) {
                             lat = tempLat;
                             lon = tempLon;
@@ -296,14 +301,14 @@
                 }
             }
 
-            // If location is outside Bidhannagar Jurisdiction
+            // Step 3: Explicit Out-of-Jurisdiction Rejection
             if (!lat) {
                 alert("Out of Jurisdiction! Please report hazards within Bidhannagar Municipal Corporation (Salt Lake/Sector 5 Area).");
                 document.getElementById('location-text').innerText = "Outside BMC Jurisdiction!";
                 return;
             }
 
-            // Update UI & Add Marker
+            // Update UI & Place Active Marker
             document.getElementById('location-text').innerText = displayAddress;
             document.getElementById('hazard-title').innerText = "BMC Ward Alert Registered";
 
