@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HyperLocal-AI | Next-Gen AI Hazard Triage & Voice Reporting</title>
-    <meta name="description" content="HyperLocal-AI: Real-time emergency hazard voice reporting and AI triage platform for All India Emergency Response">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +16,7 @@
     <!-- Leaflet.js CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
-    <!-- Tailwind CSS with custom config -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -31,21 +30,8 @@
                     colors: {
                         brand: {
                             50: '#eef2ff',
-                            400: '#818cf8',
                             500: '#6366f1',
                             600: '#4f46e5',
-                            700: '#4338ca',
-                            900: '#1e1b4b',
-                        },
-                        hazard: {
-                            p1: '#ef4444',
-                            p2: '#f59e0b',
-                            p3: '#10b981',
-                        },
-                        dark: {
-                            bg: '#090d16',
-                            card: '#111827',
-                            border: '#1f2937',
                         }
                     }
                 }
@@ -54,318 +40,113 @@
     </script>
     
     <style>
-        body {
-            background-color: #090d16;
-            color: #f3f4f6;
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-        }
+        body { background-color: #090d16; color: #f3f4f6; font-family: 'Inter', sans-serif; }
+        .glass-panel { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .glass-card { background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        #map { width: 100%; height: 100%; border-radius: 1rem; z-index: 10; }
+        .leaflet-container { background-color: #0d1322 !important; }
+        .leaflet-popup-content-wrapper { background: rgba(15, 23, 42, 0.95) !important; color: #f3f4f6 !important; border-radius: 12px !important; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .leaflet-popup-tip { background: rgba(15, 23, 42, 0.95) !important; }
 
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .glass-card {
-            background: rgba(30, 41, 59, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            transition: all 0.25s ease;
-        }
-
-        .glass-card:hover {
-            border-color: rgba(99, 102, 241, 0.4);
-            transform: translateY(-2px);
-        }
-
-        #map {
-            width: 100%;
-            height: 100%;
-            border-radius: 1rem;
-            z-index: 10;
-        }
-
-        .leaflet-container {
-            background-color: #0d1322 !important;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .leaflet-popup-content-wrapper {
-            background: rgba(15, 23, 42, 0.92) !important;
-            color: #f3f4f6 !important;
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px !important;
-            padding: 4px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important;
-        }
-
-        .leaflet-popup-tip {
-            background: rgba(15, 23, 42, 0.92) !important;
-        }
-
-        /* Marker Animations */
-        .custom-marker {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
+        /* Marker Pulsing Animations */
+        .custom-marker { display: flex; align-items: center; justify-content: center; }
         .marker-pin-p1 {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: rgba(239, 68, 68, 0.95);
-            border: 2px solid #ffffff;
-            box-shadow: 0 0 18px rgba(239, 68, 68, 0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
+            width: 32px; height: 32px; border-radius: 50%; background: #ef4444; border: 2px solid #fff;
+            box-shadow: 0 0 15px #ef4444; display: flex; align-items: center; justify-content: center; color: white;
             animation: pulseP1 1.5s infinite;
         }
-
         .marker-pin-p2 {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: rgba(245, 158, 11, 0.95);
-            border: 2px solid #ffffff;
-            box-shadow: 0 0 12px rgba(245, 158, 11, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
+            width: 28px; height: 28px; border-radius: 50%; background: #f59e0b; border: 2px solid #fff;
+            box-shadow: 0 0 12px #f59e0b; display: flex; align-items: center; justify-content: center; color: white;
             animation: pulseP2 1.8s infinite;
         }
-
-        .marker-pin-p3 {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            background: rgba(16, 185, 129, 0.95);
-            border: 2px solid #ffffff;
-            box-shadow: 0 0 10px rgba(16, 185, 129, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            animation: pulseP3 2s infinite;
-        }
-
-        @keyframes pulseP1 {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); }
-            70% { box-shadow: 0 0 0 14px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-
-        @keyframes pulseP2 {
-            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
-            70% { box-shadow: 0 0 0 12px rgba(245, 158, 11, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
-        }
-
-        @keyframes pulseP3 {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
-
-        .voice-ripple {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
-            border: 2px solid rgba(239, 68, 68, 0.6);
-            animation: ripple 1.6s ease-out infinite;
-        }
-
-        @keyframes ripple {
-            0% { width: 60px; height: 60px; opacity: 1; }
-            100% { width: 140px; height: 140px; opacity: 0; }
-        }
+        @keyframes pulseP1 { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); } 70% { box-shadow: 0 0 0 16px rgba(239, 68, 68, 0); } }
+        @keyframes pulseP2 { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.8); } 70% { box-shadow: 0 0 0 14px rgba(245, 158, 11, 0); } }
     </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+<body class="min-h-screen flex flex-col antialiased">
 
     <!-- Header -->
-    <header class="sticky top-0 z-50 glass-panel border-b border-gray-800/60 px-4 lg:px-8 py-3.5 flex items-center justify-between">
+    <header class="sticky top-0 z-50 glass-panel border-b border-gray-800 px-4 lg:px-8 py-3.5 flex items-center justify-between">
         <div class="flex items-center space-x-3">
-            <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 via-indigo-500 to-cyan-400 text-white shadow-lg shadow-brand-500/20">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-lg">
                 <i class="fa-solid fa-shield-halved text-xl"></i>
-                <span class="absolute -top-1 -right-1 flex h-3 w-3">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                </span>
             </div>
             <div>
-                <div class="flex items-center space-x-2">
-                    <h1 class="font-heading font-extrabold text-xl lg:text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-100 to-indigo-300">
-                        HyperLocal<span class="text-brand-500">-AI</span>
-                    </h1>
-                    <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20">
-                        Pan India Grid
-                    </span>
-                </div>
-                <p class="text-xs text-gray-400 hidden sm:block">AI-Powered Multilingual Emergency Triage & Real-Time Geocoding</p>
+                <h1 class="font-heading font-extrabold text-xl text-white">HyperLocal<span class="text-brand-500">-AI</span></h1>
+                <p class="text-xs text-gray-400">Live Voice Triage & Smart Geocoding Grid</p>
             </div>
-        </div>
-
-        <div class="flex items-center space-x-3 sm:space-x-5">
-            <div class="hidden md:flex items-center space-x-6 px-4 py-1.5 rounded-lg bg-gray-900/60 border border-gray-800/80 text-xs">
-                <div class="flex items-center space-x-2">
-                    <span class="h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
-                    <span class="text-gray-400">P1 Critical:</span>
-                    <span id="p1-counter" class="font-bold text-red-400">2</span>
-                </div>
-                <div class="h-3 w-px bg-gray-800"></div>
-                <div class="flex items-center space-x-2">
-                    <span class="h-2 w-2 rounded-full bg-amber-500"></span>
-                    <span class="text-gray-400">P2 High:</span>
-                    <span id="p2-counter" class="font-bold text-amber-400">1</span>
-                </div>
-            </div>
-
-            <button onclick="simulateIncident()" class="px-3.5 py-2 text-xs font-medium rounded-lg bg-gray-800/90 hover:bg-gray-700 text-gray-200 border border-gray-700 transition flex items-center space-x-2">
-                <i class="fa-solid fa-bolt text-amber-400"></i>
-                <span class="hidden sm:inline">Simulate Live Incident</span>
-            </button>
         </div>
     </header>
 
-    <!-- Main Section -->
+    <!-- Main Content -->
     <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 p-4 lg:p-6 max-w-[1920px] mx-auto w-full">
 
-        <!-- Left Column -->
+        <!-- Controls Side Panel -->
         <section class="lg:col-span-5 flex flex-col space-y-5">
-            
-            <div class="glass-panel rounded-2xl p-5 border border-indigo-500/20 relative overflow-hidden shadow-2xl">
+            <div class="glass-panel rounded-2xl p-5 shadow-2xl">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center space-x-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-brand-500/20 text-brand-400 flex items-center justify-center">
-                            <i class="fa-solid fa-microphone"></i>
-                        </div>
-                        <div>
-                            <h2 class="font-heading font-bold text-lg text-white">Voice Hazard Report</h2>
-                            <p class="text-xs text-gray-400">Speak in Hindi, Bengali or English</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center bg-gray-900/80 p-1 rounded-lg border border-gray-800 text-xs">
-                        <button id="lang-hi" onclick="setLanguage('hi-IN')" class="px-2 py-1 rounded-md font-semibold bg-brand-600 text-white transition">हिंदी</button>
-                        <button id="lang-bn" onclick="setLanguage('bn-IN')" class="px-2 py-1 rounded-md font-semibold text-gray-400 hover:text-white transition">বাংলা</button>
-                        <button id="lang-en" onclick="setLanguage('en-US')" class="px-2 py-1 rounded-md font-semibold text-gray-400 hover:text-white transition">English</button>
+                    <h2 class="font-heading font-bold text-lg text-white"><i class="fa-solid fa-microphone text-brand-500 mr-2"></i>Voice Incident Report</h2>
+                    <div class="flex bg-gray-900 p-1 rounded-lg border border-gray-800 text-xs">
+                        <button id="lang-hi" onclick="setLanguage('hi-IN')" class="px-2 py-1 rounded font-semibold bg-brand-600 text-white">हिंदी</button>
+                        <button id="lang-bn" onclick="setLanguage('bn-IN')" class="px-2 py-1 rounded font-semibold text-gray-400">বাংলা</button>
+                        <button id="lang-en" onclick="setLanguage('en-US')" class="px-2 py-1 rounded font-semibold text-gray-400">English</button>
                     </div>
                 </div>
 
-                <div class="flex flex-col items-center justify-center py-6 px-4 rounded-xl bg-gray-950/40 border border-gray-800/80 relative">
-                    <div id="ripple-container" class="hidden">
-                        <div class="voice-ripple"></div>
-                        <div class="voice-ripple" style="animation-delay: 0.4s;"></div>
-                    </div>
-
-                    <button id="mic-btn" onclick="toggleSpeechRecognition()" class="relative z-10 w-20 h-20 rounded-full bg-gradient-to-tr from-brand-600 to-indigo-500 text-white flex items-center justify-center text-3xl shadow-xl hover:scale-105 active:scale-95 transition-all">
+                <div class="flex flex-col items-center justify-center py-6 px-4 rounded-xl bg-gray-950/60 border border-gray-800 text-center">
+                    <button id="mic-btn" onclick="toggleSpeechRecognition()" class="w-20 h-20 rounded-full bg-brand-600 hover:bg-brand-500 text-white flex items-center justify-center text-3xl shadow-xl transition transform active:scale-95">
                         <i id="mic-icon" class="fa-solid fa-microphone"></i>
                     </button>
-                    
-                    <p id="mic-status" class="mt-4 text-xs font-semibold text-gray-300">
-                        Click microphone to start reporting
-                    </p>
-                    <p id="speech-feedback" class="mt-1 text-xs text-indigo-400 min-h-[1.25rem] text-center italic">
-                        "Speak now e.g. Sector 5 Kolkata me waterlogging hua hai..."
-                    </p>
+                    <p id="mic-status" class="mt-4 text-xs font-semibold text-gray-300">Microphone par click karke bolna shuru karein</p>
+                    <p id="speech-feedback" class="mt-1 text-xs text-indigo-400 min-h-[1.25rem] italic">"Try: 'Mumbai Marine Drive me accident hua hai'"</p>
+                </div>
 
-                    <div class="mt-5 w-full pt-4 border-t border-gray-800/60">
-                        <p class="text-[11px] font-medium text-gray-400 mb-2 flex items-center justify-between">
-                            <span><i class="fa-solid fa-bolt text-amber-400 mr-1.5"></i>Quick Test Presets:</span>
-                        </p>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            <button onclick="triggerPreset('hb1')" class="text-left p-2 rounded-lg bg-gray-900/60 hover:bg-gray-800 border border-gray-800 text-[11px] text-gray-300">
-                                🌉 "Howrah Bridge spark hazard"
-                            </button>
-                            <button onclick="triggerPreset('s5')" class="text-left p-2 rounded-lg bg-gray-900/60 hover:bg-gray-800 border border-gray-800 text-[11px] text-gray-300">
-                                🏢 "Salt Lake Sector 5 Kolkata flood"
-                            </button>
-                        </div>
+                <!-- Fast Test Controls -->
+                <div class="mt-4 pt-3 border-t border-gray-800">
+                    <p class="text-[11px] text-gray-400 mb-2 font-medium">Quick Location Test Buttons:</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="processHazardInput('Sector 5 Salt Lake Kolkata me paani bhar gaya hai')" class="p-2 rounded bg-gray-900 border border-gray-800 hover:border-indigo-500 text-[11px] text-left text-gray-300">
+                            🏢 Salt Lake Sector 5
+                        </button>
+                        <button onclick="processHazardInput('Park Street Kolkata me fire hazard hai')" class="p-2 rounded bg-gray-900 border border-gray-800 hover:border-indigo-500 text-[11px] text-left text-gray-300">
+                            🏛️ Park Street Kolkata
+                        </button>
+                        <button onclick="processHazardInput('Connaught Place Delhi me accident hua hai')" class="p-2 rounded bg-gray-900 border border-gray-800 hover:border-indigo-500 text-[11px] text-left text-gray-300">
+                            📍 Delhi Connaught Place
+                        </button>
+                        <button onclick="processHazardInput('Marine Drive Mumbai flood warning')" class="p-2 rounded bg-gray-900 border border-gray-800 hover:border-indigo-500 text-[11px] text-left text-gray-300">
+                            🌊 Mumbai Marine Drive
+                        </button>
                     </div>
                 </div>
 
-                <div class="mt-3">
-                    <button id="toggle-manual" onclick="toggleManualInput()" class="w-full py-1.5 text-xs text-gray-400 flex items-center justify-center space-x-1.5">
-                        <span>Or type hazard report manually</span>
-                        <i id="manual-arrow" class="fa-solid fa-chevron-down text-[10px]"></i>
-                    </button>
-                    <div id="manual-input-box" class="hidden mt-2 space-y-2">
-                        <textarea id="manual-text" rows="2" placeholder="Enter incident details e.g. Park Street Kolkata accident..." class="w-full p-2.5 rounded-lg bg-gray-900 border border-gray-700 text-xs text-gray-200 focus:border-brand-500 focus:outline-none resize-none"></textarea>
-                        <div class="flex justify-end">
-                            <button onclick="handleManualSubmit()" class="px-4 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-xs font-semibold text-white">
-                                Geocode & Submit
-                            </button>
-                        </div>
+                <!-- Text Input Box -->
+                <div class="mt-4">
+                    <div class="flex gap-2">
+                        <input id="manual-text" type="text" placeholder="Ya fir yaha location type karein..." class="flex-1 px-3 py-2 rounded-lg bg-gray-900 border border-gray-700 text-xs text-white focus:outline-none focus:border-brand-500">
+                        <button onclick="handleManualSubmit()" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-xs font-bold rounded-lg text-white">Geocode</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Active Triage Panel -->
-            <div class="glass-panel rounded-2xl p-5 border border-gray-800 flex-1 flex flex-col shadow-xl">
-                <div id="triage-output-card" class="glass-card rounded-xl p-4 mb-4 border-l-4 border-l-red-500 relative">
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <div class="flex items-center space-x-2">
-                                <span id="triage-p-badge" class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
-                                    P1 CRITICAL EMERGENCY
-                                </span>
-                            </div>
-                            <h3 id="triage-title" class="font-heading font-bold text-lg text-white mt-2">
-                                Bridge Structural Spark Hazard
-                            </h3>
-                            <p id="triage-location" class="text-xs text-gray-300 flex items-center mt-1">
-                                <i class="fa-solid fa-location-dot text-brand-400 mr-1.5"></i>
-                                <span>Howrah Bridge, Kolkata</span>
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="mt-4 pt-3 border-t border-gray-800/60 grid grid-cols-2 gap-3 text-xs">
-                        <div class="bg-gray-900/60 p-2.5 rounded-lg border border-gray-800">
-                            <span class="text-gray-400 block text-[10px] uppercase font-semibold">Transcript</span>
-                            <p id="triage-transcript" class="text-gray-200 font-medium italic mt-0.5">"Howrah Bridge spark hazard"</p>
-                        </div>
-                        <div class="bg-gray-900/60 p-2.5 rounded-lg border border-gray-800">
-                            <span class="text-gray-400 block text-[10px] uppercase font-semibold">Dispatch</span>
-                            <p id="triage-action" class="text-amber-300 font-medium mt-0.5">Disaster Response Unit</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="incident-list" class="space-y-2.5 overflow-y-auto max-h-[220px] pr-1 flex-1">
-                    <!-- Dynamic Incidents -->
-                </div>
+            <!-- Active Output Box -->
+            <div id="triage-output-card" class="glass-card rounded-xl p-4 border-l-4 border-l-red-500">
+                <span id="triage-p-badge" class="px-2 py-0.5 text-[10px] font-bold rounded bg-red-500/20 text-red-400 border border-red-500/30">P1 EMERGENCY</span>
+                <h3 id="triage-title" class="font-bold text-base text-white mt-1">Ready for Incident Input</h3>
+                <p id="triage-location" class="text-xs text-indigo-300 mt-0.5"><i class="fa-solid fa-location-dot mr-1"></i><span id="loc-text">Listening...</span></p>
+                <p id="triage-transcript" class="text-xs text-gray-400 mt-2 italic bg-gray-950/40 p-2 rounded border border-gray-800">Transcript will appear here...</p>
             </div>
         </section>
 
-        <!-- Right Column: Map -->
-        <section class="lg:col-span-7 flex flex-col space-y-5">
-            <div class="glass-panel rounded-2xl p-4 border border-gray-800 flex-1 flex flex-col relative min-h-[480px]">
-                <div class="flex items-center justify-between gap-3 mb-3 z-20">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
-                            <i class="fa-solid fa-map-location-dot"></i>
-                        </div>
-                        <div>
-                            <h2 class="font-heading font-bold text-base text-white">Live Hazard Map</h2>
-                            <p id="map-location-subtitle" class="text-xs text-gray-400">Pan-India Emergency Grid</p>
-                        </div>
-                    </div>
-                    <button onclick="recenterMap()" class="px-3 py-1.5 rounded-lg bg-gray-900/80 hover:bg-gray-800 text-gray-300 border border-gray-700 text-xs">
-                        <i class="fa-solid fa-location-crosshairs text-brand-400 mr-1"></i> Reset View
-                    </button>
+        <!-- Right Map Container -->
+        <section class="lg:col-span-7 flex flex-col">
+            <div class="glass-panel rounded-2xl p-4 border border-gray-800 flex-1 flex flex-col min-h-[500px]">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="font-bold text-sm text-white"><i class="fa-solid fa-map-location-dot text-brand-500 mr-2"></i>Interactive Dynamic Map</h2>
+                    <button onclick="recenterMap()" class="px-3 py-1 rounded bg-gray-900 hover:bg-gray-800 text-xs border border-gray-700 text-gray-300">Reset View</button>
                 </div>
-
-                <div class="flex-1 w-full h-full min-h-[420px] rounded-xl overflow-hidden relative shadow-inner">
+                <div class="flex-1 w-full h-full rounded-xl overflow-hidden relative shadow-inner">
                     <div id="map"></div>
                 </div>
             </div>
@@ -375,277 +156,210 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <!-- Complete Application Logic -->
     <script>
-        const DEFAULT_COORDS = [22.5851, 88.3468];
+        const DEFAULT_COORDS = [22.5726, 88.3639]; // Default Kolkata
         let map, markersGroup;
         let selectedLang = 'hi-IN';
-        let isListening = false;
         let recognition = null;
-        let activeMarkerObjects = {};
 
-        let incidents = [
-            {
-                id: 'inc-1',
-                priority: 'P1',
-                type: 'Bridge Structural Spark Hazard',
-                locationName: 'Howrah Bridge, Kolkata',
-                coords: [22.5851, 88.3468],
-                transcript: 'Howrah Bridge me spark aur electric hazard hai',
-                dispatch: 'Disaster Management Unit',
-                status: 'Active'
-            },
-            {
-                id: 'inc-2',
-                priority: 'P1',
-                type: 'Electrical Transformer Fire Hazard',
-                locationName: 'Chandni Chowk, New Delhi',
-                coords: [28.6506, 77.2303],
-                transcript: 'Chandni Chowk Delhi transformer fire',
-                dispatch: 'Delhi Fire Services',
-                status: 'Active'
-            }
+        // Ultra-Fast Pre-cached Database for Common Locations
+        const landmarkDB = [
+            { keys: ['sector 5', 'sector-5', 'salt lake', 'saltlake'], name: 'Sector 5, Salt Lake, Kolkata', coords: [22.5697, 88.4337] },
+            { keys: ['howrah bridge', 'howrah', 'haora'], name: 'Howrah Bridge, Kolkata', coords: [22.5851, 88.3468] },
+            { keys: ['park street', 'parkstreet'], name: 'Park Street, Kolkata', coords: [22.5551, 88.3518] },
+            { keys: ['sealdah', 'sialdah'], name: 'Sealdah Railway Station, Kolkata', coords: [22.5670, 88.3708] },
+            { keys: ['new town', 'newtown'], name: 'New Town, Rajarhat, Kolkata', coords: [22.5889, 88.4790] },
+            { keys: ['gariahata', 'gariahat'], name: 'Gariahat Crossing, Kolkata', coords: [22.5186, 88.3654] },
+            { keys: ['mg road', 'm.g. road'], name: 'Mahatma Gandhi Road, Kolkata', coords: [22.5820, 88.3590] },
+            { keys: ['connaught place', 'cp', 'delhi'], name: 'Connaught Place, New Delhi', coords: [28.6315, 77.2167] },
+            { keys: ['marine drive', 'mumbai'], name: 'Marine Drive, Mumbai', coords: [18.9440, 72.8230] },
+            { keys: ['mg road bengaluru', 'bangalore', 'bengaluru'], name: 'MG Road, Bengaluru', coords: [12.9756, 77.6066] },
+            { keys: ['hitech city', 'hyderabad'], name: 'HITEC City, Hyderabad', coords: [17.4435, 78.3772] }
         ];
 
-        // Known Landmark Dictionary for Instant Offline Geocoding
-        const landmarkMap = {
-            'howrah': { name: 'Howrah Bridge, Kolkata', coords: [22.5851, 88.3468] },
-            'sector 5': { name: 'Sector 5, Salt Lake, Kolkata', coords: [22.5697, 88.4337] },
-            'sector-5': { name: 'Sector 5, Salt Lake, Kolkata', coords: [22.5697, 88.4337] },
-            'park street': { name: 'Park Street, Kolkata', coords: [22.5551, 88.3518] },
-            'delhi': { name: 'Chandni Chowk, New Delhi', coords: [28.6506, 77.2303] },
-            'mumbai': { name: 'Marine Drive, Mumbai', coords: [18.9440, 72.8230] }
-        };
-
-        // Initialize Map
         document.addEventListener('DOMContentLoaded', () => {
             initMap();
-            renderIncidents();
-            initSpeechRecognition();
+            initSpeech();
         });
 
         function initMap() {
-            map = L.map('map').setView(DEFAULT_COORDS, 12);
+            map = L.map('map').setView(DEFAULT_COORDS, 11);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
+                attribution: '&copy; OpenStreetMap'
             }).addTo(map);
 
             markersGroup = L.layerGroup().addTo(map);
-            updateMapMarkers();
         }
 
-        function createCustomIcon(priority) {
-            const className = priority === 'P1' ? 'marker-pin-p1' : (priority === 'P2' ? 'marker-pin-p2' : 'marker-pin-p3');
-            return L.divIcon({
-                className: 'custom-marker',
-                html: `<div class="${className}"><i class="fa-solid fa-triangle-exclamation text-xs"></i></div>`,
-                iconSize: [32, 32],
-                iconAnchor: [16, 16]
+        function setLanguage(lang) {
+            selectedLang = lang;
+            document.querySelectorAll('[id^="lang-"]').forEach(btn => {
+                btn.className = btn.id === `lang-${lang.split('-')[0]}` 
+                    ? "px-2 py-1 rounded font-semibold bg-brand-600 text-white" 
+                    : "px-2 py-1 rounded font-semibold text-gray-400";
             });
         }
 
-        function updateMapMarkers() {
-            markersGroup.clearLayers();
-            activeMarkerObjects = {};
-
-            incidents.forEach(inc => {
-                const marker = L.marker(inc.coords, { icon: createCustomIcon(inc.priority) })
-                    .bindPopup(`<b>${inc.type}</b><br>${inc.locationName}`);
-                
-                markersGroup.addLayer(marker);
-                activeMarkerObjects[inc.id] = marker;
-            });
-        }
-
-        function focusIncidentOnMap(id) {
-            const inc = incidents.find(i => i.id === id);
-            if (inc && map) {
-                map.flyTo(inc.coords, 15, { duration: 1.5 });
-                if (activeMarkerObjects[id]) {
-                    activeMarkerObjects[id].openPopup();
-                }
-            }
-        }
-
-        function recenterMap() {
-            if (map) map.flyTo(DEFAULT_COORDS, 11);
-        }
-
-        // Web Speech API Integration
-        function initSpeechRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (SpeechRecognition) {
-                recognition = new SpeechRecognition();
+        function initSpeech() {
+            const SpeechReg = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechReg) {
+                recognition = new SpeechReg();
                 recognition.continuous = false;
                 recognition.interimResults = false;
 
                 recognition.onstart = () => {
-                    isListening = true;
-                    document.getElementById('mic-status').innerText = "Listening... Speak your emergency report";
-                    document.getElementById('ripple-container').classList.remove('hidden');
+                    document.getElementById('mic-status').innerText = "Listening... Bolna shuru karein!";
+                    document.getElementById('mic-btn').classList.add('animate-pulse', 'bg-red-600');
                 };
 
-                recognition.onresult = async (event) => {
-                    const text = event.results[0][0].transcript;
+                recognition.onresult = (e) => {
+                    const text = e.results[0][0].transcript;
                     document.getElementById('speech-feedback').innerText = `"${text}"`;
-                    await processHazardInput(text);
+                    processHazardInput(text);
                 };
 
                 recognition.onend = () => {
-                    isListening = false;
-                    document.getElementById('mic-status').innerText = "Click microphone to start reporting";
-                    document.getElementById('ripple-container').classList.add('hidden');
+                    document.getElementById('mic-status').innerText = "Microphone par click karke bolna shuru karein";
+                    document.getElementById('mic-btn').classList.remove('animate-pulse', 'bg-red-600');
                 };
 
                 recognition.onerror = () => {
-                    document.getElementById('mic-status').innerText = "Mic error or blocked. Try manual input.";
-                    document.getElementById('ripple-container').classList.add('hidden');
+                    document.getElementById('mic-status').innerText = "Mic error! Text box me likhein.";
+                    document.getElementById('mic-btn').classList.remove('animate-pulse', 'bg-red-600');
                 };
             }
         }
 
         function toggleSpeechRecognition() {
             if (!recognition) {
-                alert("Speech recognition is not supported in this browser. Please type manually.");
+                alert("Speech recognition is not supported in this browser. Please use the text input below.");
                 return;
             }
-            if (isListening) {
-                recognition.stop();
-            } else {
-                recognition.lang = selectedLang;
-                recognition.start();
-            }
+            recognition.lang = selectedLang;
+            recognition.start();
         }
 
-        function setLanguage(lang) {
-            selectedLang = lang;
-            ['hi', 'bn', 'en'].forEach(l => {
-                const btn = document.getElementById(`lang-${l}`);
-                if (`${l}-IN` === lang || `${l}-US` === lang) {
-                    btn.className = "px-2 py-1 rounded-md font-semibold bg-brand-600 text-white transition";
-                } else {
-                    btn.className = "px-2 py-1 rounded-md font-semibold text-gray-400 hover:text-white transition";
-                }
+        // Clean voice speech from Hindi/Bengali stop words
+        function cleanLocationQuery(rawText) {
+            let cleaned = rawText.toLowerCase();
+            const stopWords = ['me', 'par', 'pe', 'm', 'p', 'hua', 'hai', 'ho', 'gaya', 'gayi', 'dada', 'dhaar', 'anek', 'khub', 'paani', 'water', 'flood', 'fire', 'accident', 'aag', 'spark', ' hazard', ' emergency'];
+            
+            stopWords.forEach(word => {
+                const regex = new RegExp(`\\b${word}\\b`, 'gi');
+                cleaned = cleaned.replace(regex, '');
             });
+
+            return cleaned.trim();
         }
 
-        // Core AI & Live Geocoding Processing
-        async function processHazardInput(text) {
-            const lower = text.toLowerCase();
-            let coords = null;
-            let locationName = "Reported Emergency Location";
+        async function processHazardInput(rawText) {
+            document.getElementById('triage-transcript').innerText = `"${rawText}"`;
+            
+            const cleanQuery = cleanLocationQuery(rawText);
+            const rawLower = rawText.toLowerCase();
 
-            // 1. Check local landmark cache
-            for (let key in landmarkMap) {
-                if (lower.includes(key)) {
-                    coords = landmarkMap[key].coords;
-                    locationName = landmarkMap[key].name;
+            let coords = null;
+            let locationName = null;
+
+            // Step 1: Check Pre-cached Landmark DB (0.1ms Fast Matching)
+            for (let item of landmarkDB) {
+                if (item.keys.some(k => rawLower.includes(k) || cleanQuery.includes(k))) {
+                    coords = item.coords;
+                    locationName = item.name;
                     break;
                 }
             }
 
-            // 2. Fetch from OpenStreetMap Nominatim if landmark not cached
+            // Step 2: Fallback to Live Geocoding API if landmark not in local DB
             if (!coords) {
+                const searchLocation = cleanQuery.length > 2 ? cleanQuery : rawText;
+                
+                // Try API 1 (Geocode.maps.co / Nominatim)
                 try {
-                    const query = encodeURIComponent(text);
-                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
-                    const data = await res.json();
+                    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchLocation + ' India')}&limit=1`);
+                    const data = await response.json();
+
                     if (data && data.length > 0) {
                         coords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
                         locationName = data[0].display_name.split(',').slice(0, 3).join(',');
                     }
-                } catch (e) {
-                    console.log("Geocoding fetch error:", e);
+                } catch (err) {
+                    console.log("Primary Geocoding API failed, trying secondary fallback...", err);
                 }
             }
 
-            // Fallback to Kolkata default if geolocation API gives nothing
+            // Step 3: Secondary Backup Geocoder API (Geocodio/Photon)
+            if (!coords) {
+                try {
+                    const res2 = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(cleanQuery)}&limit=1`);
+                    const data2 = await res2.json();
+                    if (data2 && data2.features && data2.features.length > 0) {
+                        const geometry = data2.features[0].geometry.coordinates;
+                        coords = [geometry[1], geometry[0]];
+                        locationName = data2.features[0].properties.name || cleanQuery;
+                    }
+                } catch (e) {
+                    console.log("Secondary geocoder error:", e);
+                }
+            }
+
+            // Fallback default if geocoding completely fails
             if (!coords) {
                 coords = [22.5726, 88.3639];
-                locationName = "Kolkata Metropolitan Area";
+                locationName = cleanQuery ? cleanQuery.toUpperCase() + " (Approx Area)" : "Kolkata City Center";
             }
 
-            // Severity Triage logic
+            // Severe Hazard Triage Logic
             let priority = 'P2';
-            let type = 'Civic Infrastructure Incident';
-            let dispatch = 'Municipal Local Control Room';
+            let title = 'Civic Hazard Alert';
 
-            if (lower.includes('fire') || lower.includes('spark') || lower.includes('accident') || lower.includes('আগুন') || lower.includes('আগ')) {
+            if (rawLower.includes('fire') || rawLower.includes('spark') || rawLower.includes('accident') || rawLower.includes('aag') || rawLower.includes('আগুন')) {
                 priority = 'P1';
-                type = 'Fire & Severe Hazard Emergency';
-                dispatch = 'Fire & Rescue Emergency Team';
-            } else if (lower.includes('water') || lower.includes('flood') || lower.includes('জল') || lower.includes('पानी')) {
+                title = 'Critical Fire / Structural Hazard';
+            } else if (rawLower.includes('flood') || rawLower.includes('water') || rawLower.includes('paani') || rawLower.includes('জল')) {
                 priority = 'P2';
-                type = 'Urban Flood & Waterlogging Hazard';
-                dispatch = 'Drainage & Municipal Response';
+                title = 'Waterlogging & Flood Alert';
             }
 
-            // Create New Incident Record
-            const newIncident = {
-                id: 'inc-' + Date.now(),
-                priority,
-                type,
-                locationName,
-                coords,
-                transcript: text,
-                dispatch,
-                status: 'Active'
-            };
-
-            incidents.unshift(newIncident);
-            
-            // Update Active UI Display Card
-            document.getElementById('triage-title').innerText = type;
-            document.getElementById('triage-location').innerHTML = `<i class="fa-solid fa-location-dot text-brand-400 mr-1.5"></i> ${locationName}`;
-            document.getElementById('triage-transcript').innerText = `"${text}"`;
-            document.getElementById('triage-action').innerText = dispatch;
+            // Update UI Card
+            document.getElementById('triage-title').innerText = title;
+            document.getElementById('loc-text').innerText = locationName;
             document.getElementById('triage-p-badge').innerText = `${priority} EMERGENCY`;
 
-            // Refresh Map & Fly to location
-            updateMapMarkers();
-            renderIncidents();
-            focusIncidentOnMap(newIncident.id);
-        }
+            // Clear old markers & Plot new Marker
+            markersGroup.clearLayers();
 
-        function renderIncidents() {
-            const list = document.getElementById('incident-list');
-            list.innerHTML = incidents.map(inc => `
-                <div onclick="focusIncidentOnMap('${inc.id}')" class="p-2.5 rounded-lg bg-gray-900/60 border border-gray-800 hover:border-brand-500/50 cursor-pointer transition flex items-center justify-between">
-                    <div>
-                        <div class="flex items-center space-x-1.5">
-                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${inc.priority === 'P1' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'}">${inc.priority}</span>
-                            <span class="text-xs font-semibold text-white">${inc.type}</span>
-                        </div>
-                        <p class="text-[11px] text-gray-400 mt-1"><i class="fa-solid fa-location-dot text-gray-500 mr-1"></i>${inc.locationName}</p>
-                    </div>
-                    <i class="fa-solid fa-chevron-right text-xs text-gray-600"></i>
-                </div>
-            `).join('');
-        }
+            const customIcon = L.divIcon({
+                className: 'custom-marker',
+                html: `<div class="${priority === 'P1' ? 'marker-pin-p1' : 'marker-pin-p2'}"><i class="fa-solid fa-location-dot"></i></div>`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            });
 
-        function triggerPreset(type) {
-            if (type === 'hb1') {
-                processHazardInput("Howrah Bridge me spark aur fire hazard hai");
-            } else if (type === 's5') {
-                processHazardInput("Sector 5 Salt Lake Kolkata me severe flood warning hai");
-            }
-        }
+            const newMarker = L.marker(coords, { icon: customIcon })
+                .bindPopup(`<b>${title}</b><br>${locationName}`)
+                .addTo(markersGroup);
 
-        function toggleManualInput() {
-            const box = document.getElementById('manual-input-box');
-            box.classList.toggle('hidden');
+            // Fly Map smoothly to newly detected Location!
+            map.flyTo(coords, 15, {
+                animate: true,
+                duration: 1.8
+            });
+
+            setTimeout(() => {
+                newMarker.openPopup();
+            }, 1900);
         }
 
         function handleManualSubmit() {
-            const text = document.getElementById('manual-text').value;
-            if (text.trim()) {
-                processHazardInput(text);
-                document.getElementById('manual-text').value = '';
+            const input = document.getElementById('manual-text').value;
+            if (input.trim()) {
+                processHazardInput(input);
             }
         }
 
-        function simulateIncident() {
-            processHazardInput("Park Street Kolkata me vehicle collision and oil leak hua hai");
+        function recenterMap() {
+            map.flyTo(DEFAULT_COORDS, 11);
         }
     </script>
 </body>
