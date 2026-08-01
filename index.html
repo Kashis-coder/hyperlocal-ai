@@ -1,9 +1,3 @@
-Viewed index.html:1-800
-Viewed index.html:801-1147
-
-Here is the complete updated code for [`index.html`](file:///C:/Users/kashi/.gemini/antigravity/scratch/hyperlocal-ai/index.html) with OpenStreetMap Nominatim geocoding and dynamic severity-colored markers:
-
-```html
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
@@ -37,6 +31,7 @@ Here is the complete updated code for [`index.html`](file:///C:/Users/kashi/.gem
                     colors: {
                         brand: {
                             50: '#eef2ff',
+                            400: '#818cf8',
                             500: '#6366f1',
                             600: '#4f46e5',
                             700: '#4338ca',
@@ -274,7 +269,7 @@ Here is the complete updated code for [`index.html`](file:///C:/Users/kashi/.gem
                 <div class="flex items-center space-x-2">
                     <span class="h-2 w-2 rounded-full bg-amber-500"></span>
                     <span class="text-gray-400">P2 High:</span>
-                    <span id="p2-counter" class="font-bold text-amber-400">3</span>
+                    <span id="p2-counter" class="font-bold text-amber-400">2</span>
                 </div>
                 <div class="h-3 w-px bg-gray-800"></div>
                 <div class="flex items-center space-x-2">
@@ -284,7 +279,7 @@ Here is the complete updated code for [`index.html`](file:///C:/Users/kashi/.gem
                 </div>
             </div>
 
-            <button id="sim-btn" class="px-3.5 py-2 text-xs font-medium rounded-lg bg-gray-800/90 hover:bg-gray-700 text-gray-200 border border-gray-700 transition flex items-center space-x-2">
+            <button id="sim-btn" onclick="simulateIncident()" class="px-3.5 py-2 text-xs font-medium rounded-lg bg-gray-800/90 hover:bg-gray-700 text-gray-200 border border-gray-700 transition flex items-center space-x-2">
                 <i class="fa-solid fa-bolt text-amber-400"></i>
                 <span class="hidden sm:inline">Simulate Live Incident</span>
             </button>
@@ -323,8 +318,8 @@ Here is the complete updated code for [`index.html`](file:///C:/Users/kashi/.gem
                     
                     <!-- Language Switcher -->
                     <div class="flex items-center bg-gray-900/80 p-1 rounded-lg border border-gray-800 text-xs">
-                        <button id="lang-bn" class="px-2.5 py-1 rounded-md font-semibold text-gray-400 hover:text-white transition">বাংলা</button>
-                        <button id="lang-en" class="px-2.5 py-1 rounded-md font-semibold bg-brand-600 text-white shadow-sm transition">English</button>
+                        <button id="lang-bn" onclick="setLanguage('bn')" class="px-2.5 py-1 rounded-md font-semibold text-gray-400 hover:text-white transition">বাংলা</button>
+                        <button id="lang-en" onclick="setLanguage('en')" class="px-2.5 py-1 rounded-md font-semibold bg-brand-600 text-white shadow-sm transition">English</button>
                     </div>
                 </div>
 
@@ -335,7 +330,7 @@ Here is the complete updated code for [`index.html`](file:///C:/Users/kashi/.gem
                         <div class="voice-ripple" style="animation-delay: 0.4s;"></div>
                     </div>
 
-                    <button id="mic-btn" class="relative z-10 w-20 h-20 rounded-full bg-gradient-to-tr from-brand-600 to-indigo-500 text-white flex items-center justify-center text-3xl shadow-xl shadow-brand-600/30 hover:scale-105 active:scale-95 transition-all duration-300 focus:outline-none">
+                    <button id="mic-btn" onclick="toggleSpeechRecognition()" class="relative z-10 w-20 h-20 rounded-full bg-gradient-to-tr from-brand-600 to-indigo-500 text-white flex items-center justify-center text-3xl shadow-xl shadow-brand-600/30 hover:scale-105 active:scale-95 transition-all duration-300 focus:outline-none">
                         <i id="mic-icon" class="fa-solid fa-microphone"></i>
                     </button>
                     
@@ -365,14 +360,14 @@ Here is the complete updated code for [`index.html`](file:///C:/Users/kashi/.gem
 
                 <!-- Manual Input Fallback Accordion -->
                 <div class="mt-3">
-                    <button id="toggle-manual" class="w-full py-1.5 text-xs text-gray-400 hover:text-gray-200 flex items-center justify-center space-x-1.5 transition">
+                    <button id="toggle-manual" onclick="toggleManualInput()" class="w-full py-1.5 text-xs text-gray-400 hover:text-gray-200 flex items-center justify-center space-x-1.5 transition">
                         <span>Or type hazard report manually</span>
                         <i id="manual-arrow" class="fa-solid fa-chevron-down text-[10px]"></i>
                     </button>
                     <div id="manual-input-box" class="hidden mt-2 space-y-2">
                         <textarea id="manual-text" rows="2" placeholder="Enter incident details e.g., 'Severe waterlogging at Salt Lake Sector 5'..." class="w-full p-2.5 rounded-lg bg-gray-900 border border-gray-700 text-xs text-gray-200 focus:border-brand-500 focus:outline-none resize-none"></textarea>
                         <div class="flex justify-end space-x-2">
-                            <button id="submit-manual" class="px-4 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-xs font-semibold text-white transition">
+                            <button id="submit-manual" onclick="handleManualSubmit()" class="px-4 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-xs font-semibold text-white transition">
                                 Geocode & Submit Report
                             </button>
                         </div>
@@ -477,13 +472,9 @@ Here is the complete updated code for [`index.html`](file:///C:/Users/kashi/.gem
 
                     <!-- Map Layer Controls -->
                     <div class="flex items-center space-x-2 text-xs">
-                        <button id="btn-recenter" class="px-3 py-1.5 rounded-lg bg-gray-900/80 hover:bg-gray-800 text-gray-300 border border-gray-700 transition flex items-center space-x-1.5">
+                        <button id="btn-recenter" onclick="recenterMap()" class="px-3 py-1.5 rounded-lg bg-gray-900/80 hover:bg-gray-800 text-gray-300 border border-gray-700 transition flex items-center space-x-1.5">
                             <i class="fa-solid fa-location-crosshairs text-brand-400"></i>
                             <span>Recenter Sector V</span>
-                        </button>
-                        <button id="btn-add-pin" class="px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-medium shadow-md transition flex items-center space-x-1.5">
-                            <i class="fa-solid fa-plus"></i>
-                            <span>Report Pin on Map</span>
                         </button>
                     </div>
                 </div>
@@ -574,6 +565,7 @@ Here is the complete updated code for [`index.html`](file:///C:/Users/kashi/.gem
         let isListening = false;
         let recognition = null;
         let activeMarkerObjects = {}; // Maps incident.id -> L.marker
+        let activeFilter = 'all';
 
         // Pre-populated Emergency Incidents
         let incidents = [
@@ -621,435 +613,149 @@ Here is the complete updated code for [`index.html`](file:///C:/Users/kashi/.gem
                 priority: 'P2',
                 type: 'Gas Pipeline Odor Leak',
                 locationName: 'Near Webel More Metro Station',
-                coords: [22.5689, 88.4378],
-                transcript: 'ওয়েবেল মোড় মেট্রো স্টেশনের কাছে তীব্র গ্যাসের গন্ধ পাওয়া যাচ্ছে',
-                lang: 'bn',
-                confidence: 94.8,
-                dispatch: 'Bengal Gas Company Technical Alert',
+                coords: [22.5698, 88.4345],
+                transcript: 'Strong gas smell reported near Webel More metro pillar',
+                lang: 'en',
+                confidence: 89.1,
+                dispatch: 'Greater Kolkata Gas Response',
                 status: 'Active',
                 timestamp: '22 mins ago'
-            },
-            {
-                id: 'inc-5',
-                priority: 'P3',
-                type: 'Non-Functional Street Light Grid',
-                locationName: 'Techno India Alley, Sector V',
-                coords: [22.5780, 88.4289],
-                transcript: 'Street lights completely dark near Techno India back gate',
-                lang: 'en',
-                confidence: 88.1,
-                dispatch: 'Salt Lake Municipal Maintenance',
-                status: 'Under Review',
-                timestamp: '45 mins ago'
             }
         ];
 
-        // Initialize Map
+        // On DOM Load
+        document.addEventListener('DOMContentLoaded', () => {
+            initMap();
+            renderIncidents();
+            updateCounters();
+            setupSpeechRecognition();
+        });
+
+        // Initialize Leaflet Map
         function initMap() {
             map = L.map('map', {
-                zoomControl: true,
-                attributionControl: false
+                zoomControl: false
             }).setView(SECTOR5_COORDS, 14);
 
-            // CartoDB Dark Matter Tiles
+            // Dark Mode Tile Layer
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
                 subdomains: 'abcd',
+                maxZoom: 19
             }).addTo(map);
 
+            L.control.zoom({ position: 'topright' }).addTo(map);
             markersGroup = L.layerGroup().addTo(map);
-
-            // Map Click Event to pin custom reports
-            map.on('click', function(e) {
-                const lat = e.latlng.lat.toFixed(4);
-                const lng = e.latlng.lng.toFixed(4);
-                const type = prompt("Report Hazard at Lat: " + lat + ", Lng: " + lng + "\nEnter hazard description:");
-                if (type && type.trim() !== "") {
-                    processVoiceReport(type, [e.latlng.lat, e.latlng.lng]);
-                }
-            });
-
-            renderMapMarkers();
         }
 
-        // OpenStreetMap Nominatim Geocoding API helper
-        async function geocodeLocation(locationQuery) {
-            try {
-                // Append Salt Lake Sector 5, Kolkata context for accuracy
-                const fullQuery = encodeURIComponent(`${locationQuery}, Salt Lake, Sector 5, Kolkata, West Bengal`);
-                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${fullQuery}&limit=1`, {
-                    headers: { 'User-Agent': 'HyperLocal-AI-App/1.0' }
-                });
-                const data = await response.json();
-                if (data && data.length > 0) {
-                    const lat = parseFloat(data[0].lat);
-                    const lon = parseFloat(data[0].lon);
-                    return [lat, lon];
-                }
-            } catch (e) {
-                console.warn("Nominatim Geocoding API warning:", e);
-            }
-            return null; // Return null if not resolved by API
-        }
-
-        // Helper to extract location names from Bengali or English voice strings
-        function extractLocationName(text) {
-            const lower = text.toLowerCase();
-
-            // Known Kolkata Sector V Landmarks Mapping
-            if (lower.includes('karunamoyee') || lower.includes('করুণাময়ী')) {
-                return { displayName: 'Karunamoyee Bus Station, Salt Lake', searchQuery: 'Karunamoyee Bus Station', fallbackCoords: [22.5833, 88.4140] };
-            }
-            if (lower.includes('sdf') || lower.includes('এসডিএফ')) {
-                return { displayName: 'SDF Building Junction, Sector V', searchQuery: 'SDF Building Sector V Kolkata', fallbackCoords: [22.5726, 88.4331] };
-            }
-            if (lower.includes('college more') || lower.includes('কলেজ মোড়')) {
-                return { displayName: 'College More Intersection, Sector V', searchQuery: 'College More Salt Lake Sector V', fallbackCoords: [22.5755, 88.4312] };
-            }
-            if (lower.includes('webel') || lower.includes('ওয়েবেল')) {
-                return { displayName: 'Webel More Metro Station, Sector V', searchQuery: 'Webel More Sector V Kolkata', fallbackCoords: [22.5689, 88.4378] };
-            }
-            if (lower.includes('techno india') || lower.includes('টেকনো ইন্ডিয়া')) {
-                return { displayName: 'Techno India University Gate, Sector V', searchQuery: 'Techno India Sector V Kolkata', fallbackCoords: [22.5780, 88.4289] };
-            }
-            if (lower.includes('nicco park') || lower.includes('নিকো পার্ক')) {
-                return { displayName: 'Nicco Park Gate Area, Salt Lake', searchQuery: 'Nicco Park Salt Lake Kolkata', fallbackCoords: [22.5714, 88.4225] };
-            }
-            if (lower.includes('wipro') || lower.includes('উইপ্রো')) {
-                return { displayName: 'Wipro Circle, Salt Lake Sector V', searchQuery: 'Wipro Salt Lake Sector V Kolkata', fallbackCoords: [22.5742, 88.4348] };
-            }
-            if (lower.includes('eco park') || lower.includes('ইকো পার্ক')) {
-                return { displayName: 'Eco Park Rajarhat, Major Arterial Road', searchQuery: 'Eco Park New Town Kolkata', fallbackCoords: [22.6042, 88.4667] };
-            }
-
-            // Generic extracted string fallback
-            const cleanText = text.replace(/hazard|report|severe|emergency|problem|road|waterlogging|fire|sparking|pothole/gi, '').trim();
-            const locationString = cleanText.length > 3 ? cleanText.substring(0, 30) : 'Salt Lake Sector V Zone';
-            
-            // Random offset within Sector V bounding box as fallback
-            const randomOffsetLat = 22.5735 + (Math.random() - 0.5) * 0.012;
-            const randomOffsetLng = 88.4331 + (Math.random() - 0.5) * 0.012;
-
-            return {
-                displayName: locationString + ', Sector V',
-                searchQuery: locationString + ' Sector 5 Kolkata',
-                fallbackCoords: [randomOffsetLat, randomOffsetLng]
-            };
-        }
-
-        // Render Leaflet Map Markers with Color-Coded Pulsing Pins (Red for P1, Orange for P2, Green for P3)
-        function renderMapMarkers(filterPriority = 'all') {
+        // Render Map Markers & Feed List
+        function renderIncidents() {
             markersGroup.clearLayers();
             activeMarkerObjects = {};
+            const listContainer = document.getElementById('incident-list');
+            listContainer.innerHTML = '';
 
-            incidents.forEach(inc => {
-                if (filterPriority !== 'all' && inc.priority !== filterPriority) return;
+            const filteredIncidents = activeFilter === 'all' 
+                ? incidents 
+                : incidents.filter(i => i.priority === activeFilter);
 
-                let markerClass = 'marker-pin-p1'; // Red for P1
-                let iconSymbol = '<i class="fa-solid fa-triangle-exclamation text-xs"></i>';
+            filteredIncidents.forEach(inc => {
+                // 1. Create Animated Map Pin
+                const pinClass = inc.priority === 'P1' ? 'marker-pin-p1' : inc.priority === 'P2' ? 'marker-pin-p2' : 'marker-pin-p3';
+                const iconSymbol = inc.priority === 'P1' ? 'fa-triangle-exclamation' : inc.priority === 'P2' ? 'fa-triangle-exclamation' : 'fa-circle-info';
                 
-                if (inc.priority === 'P2') {
-                    markerClass = 'marker-pin-p2'; // Orange for P2
-                    iconSymbol = '<i class="fa-solid fa-triangle-exclamation text-[10px]"></i>';
-                } else if (inc.priority === 'P3') {
-                    markerClass = 'marker-pin-p3'; // Green for P3
-                    iconSymbol = '<i class="fa-solid fa-circle-info text-[10px]"></i>';
-                }
-
                 const customIcon = L.divIcon({
                     className: 'custom-marker',
-                    html: `<div class="${markerClass}" id="marker-${inc.id}">${iconSymbol}</div>`,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16]
+                    html: `<div class="${pinClass}"><i class="fa-solid ${iconSymbol} text-[10px]"></i></div>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
                 });
 
                 const marker = L.marker(inc.coords, { icon: customIcon }).addTo(markersGroup);
-                activeMarkerObjects[inc.id] = marker;
-
+                
+                // Popup HTML
                 const popupHtml = `
                     <div class="p-2 max-w-xs">
-                        <div class="flex items-center justify-between gap-2 mb-1.5">
-                            <span class="px-2 py-0.5 text-[10px] font-bold rounded ${
-                                inc.priority === 'P1' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
-                                inc.priority === 'P2' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
-                                'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                            }">
-                                ${inc.priority} PRIORITY
-                            </span>
-                            <span class="text-[10px] text-gray-400">${inc.timestamp}</span>
+                        <div class="flex items-center space-x-1.5 mb-1">
+                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${inc.priority === 'P1' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">${inc.priority}</span>
+                            <span class="text-xs font-bold text-white">${inc.type}</span>
                         </div>
-                        <h4 class="font-bold text-xs text-white mb-1">${inc.type}</h4>
-                        <p class="text-[11px] text-gray-300 flex items-center mb-2">
-                            <i class="fa-solid fa-location-dot text-brand-400 mr-1"></i> ${inc.locationName}
-                        </p>
-                        <p class="text-[10px] text-gray-400 italic bg-gray-900/80 p-1.5 rounded mb-2 border border-gray-800">
-                            "${inc.transcript}"
-                        </p>
-                        <div class="flex items-center justify-between pt-1 border-t border-gray-800">
-                            <span class="text-[10px] text-emerald-400 font-medium"><i class="fa-solid fa-check-double mr-1"></i>${inc.dispatch}</span>
-                            <button onclick="resolveIncident('${inc.id}')" class="px-2 py-1 text-[10px] font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded transition">
-                                Resolve
-                            </button>
-                        </div>
+                        <p class="text-[11px] text-gray-300 mb-1"><i class="fa-solid fa-location-dot text-brand-400 mr-1"></i>${inc.locationName}</p>
+                        <p class="text-[10px] text-gray-400 italic">"${inc.transcript}"</p>
                     </div>
                 `;
-
                 marker.bindPopup(popupHtml);
-            });
-        }
+                activeMarkerObjects[inc.id] = marker;
 
-        // Render Live Feed Cards in Sidebar
-        function renderIncidentFeed(filterPriority = 'all') {
-            const feedContainer = document.getElementById('incident-list');
-            feedContainer.innerHTML = '';
-
-            const filtered = incidents.filter(inc => filterPriority === 'all' || inc.priority === filterPriority);
-
-            if (filtered.length === 0) {
-                feedContainer.innerHTML = `
-                    <div class="text-center py-6 text-xs text-gray-500">
-                        No active incidents matching priority filter.
-                    </div>
-                `;
-                return;
-            }
-
-            filtered.forEach(inc => {
+                // 2. Render Card item in feed list
                 const card = document.createElement('div');
-                card.className = `glass-card rounded-xl p-3 border-l-2 cursor-pointer ${
-                    inc.priority === 'P1' ? 'border-l-red-500 hover:bg-red-500/5' :
-                    inc.priority === 'P2' ? 'border-l-amber-500 hover:bg-amber-500/5' :
-                    'border-l-emerald-500 hover:bg-emerald-500/5'
-                }`;
-
+                card.className = 'glass-card p-3 rounded-xl flex items-center justify-between cursor-pointer hover:border-brand-500/50 transition';
                 card.onclick = () => selectIncident(inc);
+                
+                const pColor = inc.priority === 'P1' ? 'text-red-400 bg-red-500/10 border-red-500/20' : inc.priority === 'P2' ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
 
                 card.innerHTML = `
-                    <div class="flex items-start justify-between">
-                        <div class="flex items-center space-x-2">
-                            <span class="px-1.5 py-0.5 text-[10px] font-extrabold rounded ${
-                                inc.priority === 'P1' ? 'bg-red-500/20 text-red-400' :
-                                inc.priority === 'P2' ? 'bg-amber-500/20 text-amber-400' :
-                                'bg-emerald-500/20 text-emerald-400'
-                            }">${inc.priority}</span>
-                            <h4 class="font-semibold text-xs text-white truncate max-w-[180px] sm:max-w-[220px]">${inc.type}</h4>
+                    <div class="flex items-center space-x-3">
+                        <span class="px-2 py-1 rounded text-xs font-bold border ${pColor}">${inc.priority}</span>
+                        <div>
+                            <h4 class="text-xs font-bold text-white line-clamp-1">${inc.type}</h4>
+                            <p class="text-[11px] text-gray-400">${inc.locationName}</p>
                         </div>
-                        <span class="text-[10px] text-gray-400 font-mono">${inc.timestamp}</span>
                     </div>
-                    <p class="text-[11px] text-gray-400 mt-1 flex items-center">
-                        <i class="fa-solid fa-location-dot text-brand-400 mr-1 text-[10px]"></i>
-                        <span class="truncate">${inc.locationName}</span>
-                    </p>
+                    <span class="text-[10px] text-gray-500 whitespace-nowrap ml-2">${inc.timestamp}</span>
                 `;
-
-                feedContainer.appendChild(card);
+                listContainer.appendChild(card);
             });
-
-            updateCounters();
         }
 
-        function updateCounters() {
-            const p1Count = incidents.filter(i => i.priority === 'P1').length;
-            const p2Count = incidents.filter(i => i.priority === 'P2').length;
-            document.getElementById('p1-counter').innerText = p1Count;
-            document.getElementById('p2-counter').innerText = p2Count;
-        }
-
+        // Select Incident & Update Triage Box
         function selectIncident(inc) {
-            // Update Active Triage Card
-            const badgeClass = inc.priority === 'P1' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
-                               inc.priority === 'P2' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
-                               'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
-            
-            document.getElementById('triage-p-badge').className = `px-2.5 py-0.5 text-xs font-bold rounded-full flex items-center space-x-1 ${badgeClass}`;
-            document.getElementById('triage-p-badge').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${inc.priority} EMERGENCY</span>`;
-            document.getElementById('triage-conf').innerText = `${inc.confidence}% Confidence`;
             document.getElementById('triage-title').innerText = inc.type;
-            document.getElementById('triage-location').innerHTML = `<i class="fa-solid fa-location-dot text-brand-400 mr-1.5"></i><span>${inc.locationName}</span>`;
+            document.getElementById('triage-location').querySelector('span').innerText = inc.locationName;
             document.getElementById('triage-transcript').innerText = `"${inc.transcript}"`;
-            document.getElementById('triage-action').innerHTML = `<i class="fa-solid fa-truck-medical text-xs mr-1.5"></i>${inc.dispatch}`;
+            document.getElementById('triage-action').innerHTML = `<i class="fa-solid fa-truck-medical text-xs mr-1.5"></i> ${inc.dispatch}`;
+            document.getElementById('triage-conf').innerText = `${inc.confidence}% Confidence`;
 
-            // Pan map to location & open marker popup
-            map.flyTo(inc.coords, 16, { duration: 1.2 });
-            if (activeMarkerObjects[inc.id]) {
-                setTimeout(() => {
-                    activeMarkerObjects[inc.id].openPopup();
-                }, 400);
+            const badge = document.getElementById('triage-p-badge');
+            const card = document.getElementById('triage-output-card');
+
+            if (inc.priority === 'P1') {
+                badge.className = "px-2.5 py-0.5 text-xs font-bold rounded-full bg-red-500/20 text-red-400 border border-red-500/30 flex items-center space-x-1";
+                badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i><span>P1 CRITICAL EMERGENCY</span>`;
+                card.className = "glass-card rounded-xl p-4 mb-4 border-l-4 border-l-red-500 relative";
+            } else if (inc.priority === 'P2') {
+                badge.className = "px-2.5 py-0.5 text-xs font-bold rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center space-x-1";
+                badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i><span>P2 HIGH PRIORITY</span>`;
+                card.className = "glass-card rounded-xl p-4 mb-4 border-l-4 border-l-amber-500 relative";
+            } else {
+                badge.className = "px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center space-x-1";
+                badge.innerHTML = `<i class="fa-solid fa-circle-info"></i><span>P3 ROUTINE HAZARD</span>`;
+                card.className = "glass-card rounded-xl p-4 mb-4 border-l-4 border-l-emerald-500 relative";
             }
+
+            document.getElementById('focus-incident-btn').onclick = () => focusIncidentOnMap(inc.id);
+            focusIncidentOnMap(inc.id);
         }
 
+        // Focus Map on Specific Incident
         function focusIncidentOnMap(id) {
             const inc = incidents.find(i => i.id === id);
-            if (inc) {
-                selectIncident(inc);
+            if (inc && activeMarkerObjects[id]) {
+                map.flyTo(inc.coords, 16, { duration: 1.2 });
+                activeMarkerObjects[id].openPopup();
             }
         }
 
-        function resolveIncident(id) {
-            incidents = incidents.filter(i => i.id !== id);
-            renderMapMarkers();
-            renderIncidentFeed();
-            playSynthSound('resolve');
-            
-            const counter = document.getElementById('resolved-counter');
-            counter.innerText = parseInt(counter.innerText) + 1;
+        // Recenter Map
+        function recenterMap() {
+            map.flyTo(SECTOR5_COORDS, 14, { duration: 1 });
         }
 
-        function filterIncidents(priority) {
-            renderMapMarkers(priority);
-            renderIncidentFeed(priority);
-        }
-
-        // Web Speech API Setup
-        function setupSpeechRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            
-            if (!SpeechRecognition) {
-                document.getElementById('speech-feedback').innerText = "Speech Recognition not supported in browser. Use demo inputs below.";
-                return;
-            }
-
-            recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = true;
-
-            recognition.onstart = function() {
-                isListening = true;
-                document.getElementById('mic-btn').classList.add('animate-glow');
-                document.getElementById('ripple-container').classList.remove('hidden');
-                document.getElementById('mic-status').innerText = "Listening... Speak clearly";
-                document.getElementById('speech-feedback').innerText = selectedLang === 'bn' ? "কথা বলুন..." : "Listening for voice report...";
-                playSynthSound('mic-start');
-            };
-
-            recognition.onresult = function(event) {
-                let transcript = '';
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    transcript += event.results[i][0].transcript;
-                }
-                document.getElementById('speech-feedback').innerText = `"${transcript}"`;
-
-                if (event.results[0].isFinal) {
-                    processVoiceReport(transcript);
-                }
-            };
-
-            recognition.onerror = function(event) {
-                console.error("Speech Recognition Error:", event.error);
-                stopListening();
-                document.getElementById('mic-status').innerText = "Click microphone to retry";
-            };
-
-            recognition.onend = function() {
-                stopListening();
-            };
-        }
-
-        function stopListening() {
-            isListening = false;
-            document.getElementById('mic-btn').classList.remove('animate-glow');
-            document.getElementById('ripple-container').classList.add('hidden');
-            document.getElementById('mic-status').innerText = "Click microphone to start reporting";
-        }
-
-        function toggleMic() {
-            if (!recognition) {
-                setupSpeechRecognition();
-            }
-            if (!recognition) {
-                alert("Speech recognition is unavailable in this browser. Please click one of the demo buttons!");
-                return;
-            }
-
-            if (isListening) {
-                recognition.stop();
-            } else {
-                recognition.lang = selectedLang === 'bn' ? 'bn-IN' : 'en-US';
-                recognition.start();
-            }
-        }
-
-        // Asynchronous AI NLP Triage & OpenStreetMap Geocoding Logic
-        async function processVoiceReport(text, manualCoords = null) {
-            playSynthSound('triage');
-            document.getElementById('speech-feedback').innerText = "Geocoding location & AI Triaging...";
-
-            const lower = text.toLowerCase();
-            let priority = 'P2';
-            let type = 'Municipal Road Hazard';
-            let dispatch = 'Kolkata Emergency Services';
-
-            // Severity Triage Rules
-            if (lower.includes('fire') || lower.includes('spark') || lower.includes('wire') || lower.includes('agun') || lower.includes('আগুন') || lower.includes('তার') || lower.includes('gas') || lower.includes('leak') || lower.includes('গ্যাস')) {
-                priority = 'P1'; // Red marker
-                type = (lower.includes('fire') || lower.includes('agun') || lower.includes('আগুন')) ? 'Electrical Fire & Sparking Line' : (lower.includes('gas') || lower.includes('গ্যাস') ? 'Combustible Gas Leak Alert' : 'Live Wire Emergency');
-                dispatch = 'WBSEDCL & West Bengal Fire Services';
-            } else if (lower.includes('water') || lower.includes('flood') || lower.includes('drain') || lower.includes('জল') || lower.includes('নর্দমা')) {
-                priority = 'P1'; // Red marker
-                type = 'Severe Drainage Waterlogging';
-                dispatch = 'KMDA Disaster Response Cell';
-            } else if (lower.includes('pothole') || lower.includes('traffic') || lower.includes('jam') || lower.includes('গাড়ি') || lower.includes('car')) {
-                priority = 'P2'; // Orange marker
-                type = 'Road Obstruction & Traffic Bottleneck';
-                dispatch = 'Kolkata Traffic Police Control';
-            } else {
-                priority = 'P3'; // Green marker
-                type = 'General Civic Maintenance Alert';
-                dispatch = 'Salt Lake Municipal Corporation';
-            }
-
-            // Extract Location & Geocode
-            let locationExtracted = extractLocationName(text);
-            let coords = manualCoords;
-
-            if (!coords) {
-                // Query OpenStreetMap Nominatim Geocoding API
-                const geoApiCoords = await geocodeLocation(locationExtracted.searchQuery);
-                if (geoApiCoords) {
-                    coords = geoApiCoords;
-                } else {
-                    coords = locationExtracted.fallbackCoords;
-                }
-            }
-
-            const newInc = {
-                id: 'inc-' + Date.now(),
-                priority: priority,
-                type: type,
-                locationName: locationExtracted.displayName,
-                coords: coords,
-                transcript: text,
-                lang: selectedLang,
-                confidence: (92.0 + Math.random() * 7.5).toFixed(1),
-                dispatch: dispatch,
-                status: 'Active',
-                timestamp: 'Just now'
-            };
-
-            incidents.unshift(newInc);
-            renderMapMarkers();
-            renderIncidentFeed();
-            selectIncident(newInc);
-
-            document.getElementById('speech-feedback').innerText = `"${text}"`;
-        }
-
-        // Trigger Demo Voice Presets
-        function triggerPreset(key) {
-            if (key === 'bn1') {
-                setLanguage('bn');
-                processVoiceReport('সল্টলেক সেক্টর ৫ করুণাময়ী মোড়ে নর্দমার জল উপচে রাস্তা ডুবে গেছে');
-            } else if (key === 'en1') {
-                setLanguage('en');
-                processVoiceReport('Live electric wire sparking on road near SDF Building Sector 5');
-            }
-        }
-
+        // Language Switcher
         function setLanguage(lang) {
             selectedLang = lang;
             const bnBtn = document.getElementById('lang-bn');
             const enBtn = document.getElementById('lang-en');
-
             if (lang === 'bn') {
                 bnBtn.className = "px-2.5 py-1 rounded-md font-semibold bg-brand-600 text-white shadow-sm transition";
                 enBtn.className = "px-2.5 py-1 rounded-md font-semibold text-gray-400 hover:text-white transition";
@@ -1057,97 +763,188 @@ Here is the complete updated code for [`index.html`](file:///C:/Users/kashi/.gem
                 enBtn.className = "px-2.5 py-1 rounded-md font-semibold bg-brand-600 text-white shadow-sm transition";
                 bnBtn.className = "px-2.5 py-1 rounded-md font-semibold text-gray-400 hover:text-white transition";
             }
+            if (recognition) {
+                recognition.lang = lang === 'bn' ? 'bn-IN' : 'en-US';
+            }
         }
 
-        // Web Audio API Synthesizer
-        function playSynthSound(type) {
+        // Setup Speech Recognition
+        function setupSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                document.getElementById('speech-feedback').innerText = "Speech recognition is not supported in this browser. Please use manual input.";
+                return;
+            }
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = selectedLang === 'bn' ? 'bn-IN' : 'en-US';
+
+            recognition.onstart = () => {
+                isListening = true;
+                document.getElementById('ripple-container').classList.remove('hidden');
+                document.getElementById('mic-status').innerText = "Listening... Speak now";
+                document.getElementById('speech-feedback').innerText = "Capturing voice input...";
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('speech-feedback').innerText = `"${transcript}"`;
+                processHazardReport(transcript, selectedLang);
+            };
+
+            recognition.onerror = () => {
+                stopListeningState();
+                document.getElementById('speech-feedback').innerText = "Voice recognition timed out or encountered an error.";
+            };
+
+            recognition.onend = () => {
+                stopListeningState();
+            };
+        }
+
+        function toggleSpeechRecognition() {
+            if (!recognition) setupSpeechRecognition();
+            if (!recognition) return;
+
+            if (isListening) {
+                recognition.stop();
+                stopListeningState();
+            } else {
+                recognition.lang = selectedLang === 'bn' ? 'bn-IN' : 'en-US';
+                recognition.start();
+            }
+        }
+
+        function stopListeningState() {
+            isListening = false;
+            document.getElementById('ripple-container').classList.add('hidden');
+            document.getElementById('mic-status').innerText = "Click microphone to start reporting";
+        }
+
+        // Quick Preset Trigger
+        function triggerPreset(key) {
+            if (key === 'bn1') {
+                setLanguage('bn');
+                const text = "সল্টলেক সেক্টর ৫ করুণাময়ী মোড়ে নর্দমার জল উপচে রাস্তা ডুবে গেছে";
+                document.getElementById('speech-feedback').innerText = `"${text}"`;
+                processHazardReport(text, 'bn');
+            } else if (key === 'en1') {
+                setLanguage('en');
+                const text = "Live electric wire sparking on road near SDF Building Sector 5";
+                document.getElementById('speech-feedback').innerText = `"${text}"`;
+                processHazardReport(text, 'en');
+            }
+        }
+
+        // Toggle Manual Input Accordion
+        function toggleManualInput() {
+            const box = document.getElementById('manual-input-box');
+            const arrow = document.getElementById('manual-arrow');
+            if (box.classList.contains('hidden')) {
+                box.classList.remove('hidden');
+                arrow.className = "fa-solid fa-chevron-up text-[10px]";
+            } else {
+                box.classList.add('hidden');
+                arrow.className = "fa-solid fa-chevron-down text-[10px]";
+            }
+        }
+
+        function handleManualSubmit() {
+            const text = document.getElementById('manual-text').value.trim();
+            if (text) {
+                processHazardReport(text, selectedLang);
+                document.getElementById('manual-text').value = '';
+            }
+        }
+
+        // Process Hazard Report (AI Triage Logic & Nominatim Geocoding API)
+        async function processHazardReport(text, lang) {
+            document.getElementById('mic-status').innerText = "AI Triaging & Geocoding with OpenStreetMap...";
+            
+            // 1. Logic Rule-Based Triage
+            let priority = 'P3';
+            let type = 'General Infrastructure Issue';
+            let dispatch = 'Municipal Maintenance';
+            
+            const lower = text.toLowerCase();
+            if (lower.includes('sparking') || lower.includes('electric') || lower.includes('fire') || lower.includes('agun') || lower.includes('wire')) {
+                priority = 'P1';
+                type = 'Electrical Emergency & Fire Hazard';
+                dispatch = 'WBSEDCL Electrical Emergency Unit';
+            } else if (lower.includes('waterlogging') || lower.includes('jal') || lower.includes('drain') || lower.includes('flood')) {
+                priority = 'P1';
+                type = 'Severe Waterlogging / Drainage Breach';
+                dispatch = 'KMDA Disaster Management';
+            } else if (lower.includes('pothole') || lower.includes('jam') || lower.includes('traffic') || lower.includes('crater')) {
+                priority = 'P2';
+                type = 'Road Obstruction & Traffic Hazard';
+                dispatch = 'Kolkata Traffic Police';
+            }
+
+            // 2. Fetch Geolocation via Nominatim OpenStreetMap API
+            let coords = [22.5735 + (Math.random() - 0.5) * 0.01, 88.4331 + (Math.random() - 0.5) * 0.01];
+            let locationName = "Salt Lake Sector 5 Zone";
+
             try {
-                const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                if (!AudioCtx) return;
-                const ctx = new AudioCtx();
-
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-
-                if (type === 'mic-start') {
-                    osc.frequency.setValueAtTime(440, ctx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
-                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
-                    gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.15);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.15);
-                } else if (type === 'triage') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(300, ctx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.25);
-                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-                    gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.25);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.25);
-                } else if (type === 'resolve') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(523.25, ctx.currentTime);
-                    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
-                    gain.gain.setValueAtTime(0.12, ctx.currentTime);
-                    gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.25);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.25);
+                const query = encodeURIComponent(`${text} Salt Lake Sector 5 Kolkata`);
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+                const data = await res.json();
+                if (data && data.length > 0) {
+                    coords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+                    locationName = data[0].display_name.split(',').slice(0, 3).join(',');
                 }
-            } catch (e) {}
+            } catch (err) {
+                console.warn('Geocoding fallback triggered:', err);
+            }
+
+            // 3. Construct Incident Object
+            const newIncident = {
+                id: `inc-${Date.now()}`,
+                priority: priority,
+                type: type,
+                locationName: locationName,
+                coords: coords,
+                transcript: text,
+                lang: lang,
+                confidence: (92 + Math.random() * 7).toFixed(1),
+                dispatch: dispatch,
+                status: 'Active',
+                timestamp: 'Just now'
+            };
+
+            // 4. Update Global State
+            incidents.unshift(newIncident);
+            renderIncidents();
+            updateCounters();
+            selectIncident(newIncident);
+            document.getElementById('mic-status').innerText = "Report triaged & mapped successfully!";
         }
 
-        // Initial setup
-        document.addEventListener('DOMContentLoaded', () => {
-            initMap();
-            renderIncidentFeed();
-            setupSpeechRecognition();
+        // Filter Incident Cards
+        function filterIncidents(priority) {
+            activeFilter = priority;
+            renderIncidents();
+        }
 
-            document.getElementById('mic-btn').addEventListener('click', toggleMic);
+        // Update Dashboard Counters
+        function updateCounters() {
+            const p1 = incidents.filter(i => i.priority === 'P1').length;
+            const p2 = incidents.filter(i => i.priority === 'P2').length;
+            document.getElementById('p1-counter').innerText = p1;
+            document.getElementById('p2-counter').innerText = p2;
+        }
 
-            document.getElementById('lang-bn').addEventListener('click', () => setLanguage('bn'));
-            document.getElementById('lang-en').addEventListener('click', () => setLanguage('en'));
-
-            document.getElementById('btn-recenter').addEventListener('click', () => {
-                map.flyTo(SECTOR5_COORDS, 14, { duration: 1 });
-            });
-
-            document.getElementById('btn-add-pin').addEventListener('click', () => {
-                const desc = prompt("Enter hazard report text for current map center (Sector V):");
-                if (desc) {
-                    processVoiceReport(desc);
-                }
-            });
-
-            document.getElementById('toggle-manual').addEventListener('click', () => {
-                const box = document.getElementById('manual-input-box');
-                const arrow = document.getElementById('manual-arrow');
-                box.classList.toggle('hidden');
-                arrow.classList.toggle('fa-chevron-up');
-                arrow.classList.toggle('fa-chevron-down');
-            });
-
-            document.getElementById('submit-manual').addEventListener('click', () => {
-                const val = document.getElementById('manual-text').value;
-                if (val && val.trim() !== '') {
-                    processVoiceReport(val);
-                    document.getElementById('manual-text').value = '';
-                }
-            });
-
-            document.getElementById('sim-btn').addEventListener('click', () => {
-                const simAlerts = [
-                    "সল্টলেক উইপ্রো মোড়ে বড় ড্রেনের ঢাকনা খোলা পড়ে আছে",
-                    "Overturned water tanker blocking Sector 5 College More main road",
-                    "Heavy tree branch fallen on transformer at Karunamoyee",
-                    "সেক্টর ৫ ইলেকট্রনিক্স নিকো পার্ক রোডে ট্রাফিক সিগন্যাল বন্ধ"
-                ];
-                const randomAlert = simAlerts[Math.floor(Math.random() * simAlerts.length)];
-                processVoiceReport(randomAlert);
-            });
-        });
+        // Simulate Live Incident
+        function simulateIncident() {
+            const simPrompts = [
+                "Water pipeline leak near Karunamoyee bus stand Sector 5",
+                "Transformer smoking near College More intersection",
+                "Large fallen tree branch blocking road near SDF building"
+            ];
+            const randomPrompt = simPrompts[Math.floor(Math.random() * simPrompts.length)];
+            processHazardReport(randomPrompt, 'en');
+        }
     </script>
 </body>
 </html>
-```
