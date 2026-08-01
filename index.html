@@ -53,6 +53,10 @@
             box-shadow: 0 0 15px #ef4444; display: flex; align-items: center; justify-content: center; color: white;
             animation: pulseP1 1.5s infinite;
         }
+        .marker-pin-history {
+            width: 26px; height: 26px; border-radius: 50%; background: #f97316; border: 2px solid #fff;
+            box-shadow: 0 0 8px rgba(249, 115, 22, 0.6); display: flex; align-items: center; justify-content: center; color: white;
+        }
         @keyframes pulseP1 { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); } 70% { box-shadow: 0 0 0 16px rgba(239, 68, 68, 0); } }
     </style>
 </head>
@@ -69,9 +73,14 @@
                 <p class="text-xs text-gray-400">Bidhannagar Municipal Corporation (BMC Jurisdiction Portal)</p>
             </div>
         </div>
-        <div class="hidden sm:flex items-center bg-emerald-950/60 border border-emerald-500/30 px-3 py-1 rounded-full">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-2"></span>
-            <span class="text-xs font-semibold text-emerald-300">Salt Lake / TIU Zone Active</span>
+        <div class="flex items-center space-x-3">
+            <div class="bg-gray-900 border border-gray-800 px-3 py-1 rounded-full text-xs font-semibold text-gray-300">
+                Total Reported: <span id="incident-count" class="text-emerald-400 font-bold">0</span>
+            </div>
+            <div class="hidden sm:flex items-center bg-emerald-950/60 border border-emerald-500/30 px-3 py-1 rounded-full">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-2"></span>
+                <span class="text-xs font-semibold text-emerald-300">Salt Lake / TIU Zone Active</span>
+            </div>
         </div>
     </header>
 
@@ -127,12 +136,20 @@
                 </div>
             </div>
 
-            <!-- Triage Status Card -->
+            <!-- Triage Status & History Feed -->
             <div id="triage-output-card" class="glass-card rounded-xl p-4 border-l-4 border-l-emerald-500">
                 <span id="priority-badge" class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">BMC DISPATCH STATUS</span>
                 <h3 id="hazard-title" class="font-bold text-base text-white mt-1">Bidhannagar Jurisdiction Monitor</h3>
                 <p id="hazard-location" class="text-xs text-emerald-300 mt-0.5"><i class="fa-solid fa-location-dot mr-1"></i><span id="location-text">Ready for local reports...</span></p>
                 <p id="speech-transcript" class="text-xs text-gray-400 mt-2 italic bg-gray-950/40 p-2 rounded border border-gray-800">Voice transcript will show here...</p>
+
+                <!-- Incident History Log -->
+                <div class="mt-4 pt-3 border-t border-gray-800">
+                    <h4 class="text-xs font-bold text-gray-300 mb-2"><i class="fa-solid fa-clock-rotate-left mr-1 text-emerald-500"></i> Active Reported Incidents:</h4>
+                    <div id="incident-history-list" class="max-h-[140px] overflow-y-auto space-y-1.5 pr-1">
+                        <p class="text-[11px] text-gray-500 italic">No reports recorded yet.</p>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -141,7 +158,10 @@
             <div class="glass-panel rounded-2xl p-4 border border-gray-800 flex-1 flex flex-col min-h-[500px]">
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="font-bold text-sm text-white"><i class="fa-solid fa-map-location-dot text-emerald-500 mr-2"></i>Bidhannagar Municipal GIS Map</h2>
-                    <button onclick="resetMapView()" class="px-3 py-1 rounded bg-gray-900 hover:bg-gray-800 text-xs border border-gray-700 text-gray-300">Reset View</button>
+                    <div class="flex gap-2">
+                        <button onclick="clearAllHistory()" class="px-3 py-1 rounded bg-red-950/60 hover:bg-red-900/80 text-xs border border-red-800 text-red-300">Clear History</button>
+                        <button onclick="resetMapView()" class="px-3 py-1 rounded bg-gray-900 hover:bg-gray-800 text-xs border border-gray-700 text-gray-300">Reset View</button>
+                    </div>
                 </div>
                 <div class="flex-1 w-full h-full rounded-xl overflow-hidden relative shadow-inner">
                     <div id="map"></div>
@@ -156,11 +176,13 @@
     <script>
         const TIU_COORDS = [22.5760, 88.4343]; 
         
-        let map, markersGroup;
+        let map;
         let selectedLang = 'hi-IN';
         let recognition = null;
+        let activeMarkersList = []; // Memory array to save all reported markers
+        let activeLatestMarker = null;
 
-        // Massive Pre-cached Landmarks Database for Bidhannagar & Surroundings
+        // Massive Pre-cached Landmarks Database
         const bmcDatabase = [
             { keywords: ['college', 'college-more'], name: 'College More, Salt Lake Sector V', coords: [22.5732, 88.4331] },
             { keywords: ['karunamoyee', 'karunamoye', 'karunamoyee bus'], name: 'Karunamoyee Bus Station, Salt Lake', coords: [22.5830, 88.4180] },
@@ -184,7 +206,6 @@
             { keywords: ['vip road'], name: 'VIP Road Salt Lake Bypass', coords: [22.6120, 88.4310] }
         ];
 
-        // Explicit Out-of-bounds list for demo testing
         const outOfBoundsKeywords = ['mumbai', 'delhi', 'bangalore', 'marine drive', 'howrah', 'park street', 'esplanade', 'alipore', 'kolkata airport'];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -198,8 +219,6 @@
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap'
             }).addTo(map);
-
-            markersGroup = L.layerGroup().addTo(map);
 
             // Campus Base Marker
             const tiuMarker = L.marker(TIU_COORDS).addTo(map);
@@ -273,7 +292,7 @@
             let lon = null;
             let displayAddress = "";
 
-            // 2. High Priority Local Database Matcher (Fast & Offline Ready)
+            // 2. Local Database Matcher
             for (let spot of bmcDatabase) {
                 if (spot.keywords.some(kw => textLower.includes(kw))) {
                     lat = spot.coords[0];
@@ -283,10 +302,9 @@
                 }
             }
 
-            // 3. Fallback Dynamic Search for unlisted places (Appends Salt Lake Kolkata)
+            // 3. Fallback Dynamic Search
             if (!lat) {
                 try {
-                    // Extract core location words
                     const cleanWord = textLower.replace(/me|par|pe|hua|hai|gaya|gayi|paani|water|flood|fire|accident|emergency|bhar|lag|lagi/g, '').trim();
                     const searchParam = encodeURIComponent(`${cleanWord} Salt Lake Sector 5 Bidhannagar Kolkata`);
                     const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${searchParam}&limit=1`);
@@ -302,19 +320,29 @@
                 }
             }
 
-            // 4. Default Fail-Safe: If nothing matches, place in Salt Lake Sector V HQ
+            // 4. Default Fail-Safe
             if (!lat) {
                 lat = 22.5697;
                 lon = 88.4337;
                 displayAddress = `${queryText} (Bidhannagar Sector V Zone)`;
             }
 
-            // UI Map Drop and Animation
+            // Update UI Status
             document.getElementById('location-text').innerText = displayAddress;
             document.getElementById('hazard-title').innerText = "BMC Ward Alert Registered";
 
-            markersGroup.clearLayers();
+            // Convert previous active marker to "Historical" Orange Marker
+            if (activeLatestMarker) {
+                const historyIcon = L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div class="marker-pin-history"><i class="fa-solid fa-location-dot text-[10px]"></i></div>`,
+                    iconSize: [26, 26],
+                    iconAnchor: [13, 13]
+                });
+                activeLatestMarker.setIcon(historyIcon);
+            }
 
+            // Create New Red Active Marker
             const customMarkerIcon = L.divIcon({
                 className: 'custom-marker',
                 html: `<div class="marker-pin-active"><i class="fa-solid fa-triangle-exclamation text-xs"></i></div>`,
@@ -322,14 +350,56 @@
                 iconAnchor: [16, 16]
             });
 
-            const marker = L.marker([lat, lon], { icon: customMarkerIcon }).addTo(markersGroup);
-            marker.bindPopup(`<b>BMC Emergency Dispatch:</b><br>${displayAddress}`);
+            const newMarker = L.marker([lat, lon], { icon: customMarkerIcon }).addTo(map);
+            newMarker.bindPopup(`<b>BMC Emergency Dispatch:</b><br>${displayAddress}`);
 
+            activeLatestMarker = newMarker;
+            activeMarkersList.push({ marker: newMarker, address: displayAddress, query: queryText, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) });
+
+            // Update Incident Log List UI
+            renderIncidentHistory();
+
+            // Zoom Map to new reported point
             map.flyTo([lat, lon], 16, { animate: true, duration: 1.5 });
             
             setTimeout(() => {
-                marker.openPopup();
+                newMarker.openPopup();
             }, 1600);
+        }
+
+        function renderIncidentHistory() {
+            const listContainer = document.getElementById('incident-history-list');
+            document.getElementById('incident-count').innerText = activeMarkersList.length;
+
+            if (activeMarkersList.length === 0) {
+                listContainer.innerHTML = `<p class="text-[11px] text-gray-500 italic">No reports recorded yet.</p>`;
+                return;
+            }
+
+            let html = '';
+            // Render reverse order (newest first)
+            for (let i = activeMarkersList.length - 1; i >= 0; i--) {
+                const item = activeMarkersList[i];
+                const isLatest = (i === activeMarkersList.length - 1);
+                html += `
+                    <div class="flex items-start justify-between p-2 rounded bg-gray-900/80 border ${isLatest ? 'border-red-500/50 bg-red-950/20' : 'border-gray-800'} text-xs">
+                        <div>
+                            <p class="font-semibold text-gray-200 text-[11px]">${item.address}</p>
+                            <p class="text-[10px] text-gray-400 italic">"${item.query}"</p>
+                        </div>
+                        <span class="text-[10px] text-emerald-400 font-mono">${item.time}</span>
+                    </div>
+                `;
+            }
+            listContainer.innerHTML = html;
+        }
+
+        function clearAllHistory() {
+            activeMarkersList.forEach(item => map.removeLayer(item.marker));
+            activeMarkersList = [];
+            activeLatestMarker = null;
+            renderIncidentHistory();
+                document.getElementById('location-text').innerText = "History Cleared.";
         }
 
         function submitManualText() {
